@@ -1,5 +1,9 @@
-{ config, lib, pkgs, ... }:
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   home.username = "thrix";
   home.homeDirectory = "/home/thrix";
 
@@ -8,6 +12,8 @@
   home.packages = with pkgs; [
     _1password
     _1password-gui
+    alejandra
+    deadnix
     glab
     htop
     jq
@@ -17,14 +23,16 @@
     yq
   ];
 
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-    "1password"
-    "1password-cli"
-  ];
+  nixpkgs.config.allowUnfreePredicate = pkg:
+    builtins.elem (lib.getName pkg) [
+      "1password"
+      "1password-cli"
+    ];
 
   # Environment variables
   home.sessionVariables = {
     EDITOR = "nvim";
+    SSH_AUTH_SOCK = "$HOME/.1password/agent.sock";
   };
 
   # Restore host specific configuration links, before checking link targets
@@ -33,6 +41,10 @@
       $HOME/.config/sway/config
       $HOME/.config/waybar/config
       $HOME/.config/waybar/style.css
+      $HOME/.mozilla/firefox/profiles.ini
+      $HOME/.mozilla/firefox/thrix/containers.json
+      $HOME/.mozilla/firefox/thrix/search.json.mozlz4
+      $HOME/.mozilla/firefox/thrix/user.js
     "
 
     for file in $files; do
@@ -48,6 +60,10 @@
       $HOME/.config/sway/config
       $HOME/.config/waybar/config
       $HOME/.config/waybar/style.css
+      $HOME/.mozilla/firefox/profiles.ini
+      $HOME/.mozilla/firefox/thrix/containers.json
+      $HOME/.mozilla/firefox/thrix/search.json.mozlz4
+      $HOME/.mozilla/firefox/thrix/user.js
     "
 
     for file in $files; do
@@ -79,7 +95,7 @@
     if [ -e /var/cache/man -a $(stat -c "%u" /var/cache/man) -eq 0 ]; then
       echo -e "\e[32mSet permissions of /var/cache/man to $USER:$USER\e[0m"
       /usr/bin/sudo chown -Rf $USER:$USER /var/cache/man
-    fi    
+    fi
   '';
 
   # Let Home Manager install and manage itself.
@@ -101,24 +117,66 @@
 
     # Aliases
     shellAliases = {
-        # git
-        g = "git";
+      # git
+      g = "git";
 
-        # ls
-        l = "ls -alh";
-        ll = "ls -l";
-        ls = "ls --color=tty";
+      # ls
+      l = "ls -alh";
+      ll = "ls -l";
+      ls = "ls --color=tty";
 
-        # host commands
-        firefox = "flatpak-spawn --host firefox";
-        flatpak = "flatpak-spawn --host flatpak";
-        podman = "flatpak-spawn --host podman";
-        rpm-ostree = "flatpak-spawn --host rpm-ostree";
+      # host commands
+      firefox = "flatpak-spawn --host firefox";
+      flatpak = "flatpak-spawn --host flatpak";
+      podman = "flatpak-spawn --host podman";
+      rpm-ostree = "flatpak-spawn --host rpm-ostree";
     };
   };
 
   # Bat
   programs.bat.enable = true;
+
+  # Firefox
+  programs.firefox = {
+    enable = true;
+    package = null;
+
+    profiles = {
+      thrix = {
+        id = 0;
+        search = {
+          default = "Google";
+          force = true;
+        };
+        settings = {
+          "browser.startup.homepage" = "https://google.com";
+          "browser.search.region" = "CZ";
+          "browser.search.isUS" = false;
+          "distribution.searchplugins.defaultLocale" = "en-US";
+          "general.useragent.locale" = "en-US";
+          "browser.bookmarks.showMobileBookmarks" = true;
+          "browser.newtabpage.pinned" = [
+            {
+              title = "Google";
+              url = "https://google.com";
+            }
+          ];
+        };
+        containers = {
+          personal = {
+            color = "blue";
+            icon = "tree";
+            id = 2;
+          };
+          redhat = {
+            color = "red";
+            icon = "briefcase";
+            id = 1;
+          };
+        };
+      };
+    };
+  };
 
   # GitHub CLI
   programs.gh = {
@@ -140,6 +198,8 @@
     aliases = {
       c = "commit";
       cam = "commit --amend -vs";
+
+      p = "push";
       pf = "push --force";
       pr = "pull --rebase";
     };
@@ -185,9 +245,9 @@
     package = pkgs.emptyDirectory;
     matchBlocks = {
       "*" = {
-	extraOptions = {
-	  IdentityAgent = "~/.1password/agent.sock";
-	};
+        extraOptions = {
+          IdentityAgent = "~/.1password/agent.sock";
+        };
       };
     };
   };
@@ -200,7 +260,7 @@
     enable = true;
     package = pkgs.emptyDirectory;
     style = import ./waybar/style.nix;
-    settings = import ./waybar/settings.nix;  
+    settings = import ./waybar/settings.nix;
   };
 
   # Zoxide
@@ -213,7 +273,7 @@
   wayland.windowManager.sway = {
     enable = true;
     package = pkgs.emptyDirectory;
-    config = import ./sway/config.nix { inherit lib; }; 
+    config = import ./sway/config.nix {inherit lib;};
   };
 
   # XDG
@@ -226,7 +286,7 @@
         genericName = "1password desktop application";
         exec = "toolbox run --container nix 1password";
         terminal = false;
-        categories = [ "Application" "Utility" ];
+        categories = ["Application" "Utility"];
       };
     };
   };

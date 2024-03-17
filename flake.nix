@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    
+
     home-manager = {
       # https://github.com/nix-community/home-manager/pull/5074
       url = "github:nix-community/home-manager";
@@ -17,18 +17,24 @@
     };
   };
 
-  outputs = { nixpkgs, home-manager, nixvim, ... }:
-    let
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-    in {
-      homeConfigurations."thrix" = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
+  outputs = {
+    nixpkgs,
+    home-manager,
+    nixvim,
+    ...
+  }: let
+    system = "x86_64-linux";
+    pkgs = nixpkgs.legacyPackages.${system};
+  in {
+    formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.alejandra;
 
-        modules = [ 
-	  nixvim.homeManagerModules.nixvim
-	  ./home.nix
-	];
-      };
+    homeConfigurations."thrix" = home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+
+      modules = [
+        nixvim.homeManagerModules.nixvim
+        ./home.nix
+      ];
     };
+  };
 }

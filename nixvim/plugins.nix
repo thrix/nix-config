@@ -7,19 +7,19 @@
     setup = {
       go = {
         formatter = "gofmt";
-	linter = "go_revive";
+        linter = "go_revive";
       };
 
       python = {
-	formatter = "ruff";
-	linter = "ruff";
+        formatter = "ruff";
+        linter = "ruff";
       };
     };
   };
 
   lsp = {
     enable = true;
-    
+
     servers = {
       ansiblels = {
         enable = true;

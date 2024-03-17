@@ -1,18 +1,18 @@
-{ lib, ... }:
-let
+{lib, ...}: let
   modifier = "Mod4";
   terminal = "foot";
-in 
-{
+in {
   modifier = modifier;
   terminal = terminal;
   menu = "rofi -terminal '${terminal}' -show combi -combi-modes drun#run -modes combi";
 
-  bars = [{
-    position = "top";
-    command = "waybar";
-  }];
-  
+  bars = [
+    {
+      position = "top";
+      command = "waybar";
+    }
+  ];
+
   fonts = {
     size = 11.0;
   };
@@ -27,4 +27,10 @@ in
       bg = "$(ls ~/.config/home-manager/background/* | shuf -n1) fill";
     };
   };
+
+  startup = [
+    {
+      command = "toolbox run --container nix 1password";
+    }
+  ];
 }
