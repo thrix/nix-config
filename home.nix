@@ -33,6 +33,7 @@
   home.sessionVariables = {
     EDITOR = "nvim";
     SSH_AUTH_SOCK = "$HOME/.1password/agent.sock";
+    OP_BIOMETRIC_UNLOCK_ENABLED = "true";
   };
 
   # Restore host specific configuration links, before checking link targets
@@ -218,6 +219,11 @@
 
   # Git Cliff
   programs.git-cliff = {
+    enable = true;
+  };
+
+  # K9s
+  programs.k9s = {
     enable = true;
   };
 
