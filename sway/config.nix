@@ -31,6 +31,11 @@ in {
   startup = [
     {
       command = "toolbox run --container nix 1password";
+      always = true;
+    }
+    {
+      command = "/usr/libexec/polkit-gnome-authentication-agent-1";
+      always = true;
     }
   ];
 }

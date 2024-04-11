@@ -15,9 +15,12 @@
     alejandra
     deadnix
     glab
+    gnumake
+    hatch
     htop
     jq
     pre-commit
+    python39
     shellcheck
     silver-searcher
     yq
@@ -34,6 +37,7 @@
     EDITOR = "nvim";
     SSH_AUTH_SOCK = "$HOME/.1password/agent.sock";
     OP_BIOMETRIC_UNLOCK_ENABLED = "true";
+    OP_PLUGIN_ALIASES_SOURCED = "1";
   };
 
   # Restore host specific configuration links, before checking link targets
@@ -108,12 +112,30 @@
 
     # Required to load nix in nix-toolbox
     initExtra = ''
-      test -f /run/.toolboxenv || source $HOME/.bashrc.backup
-      source "$HOME/.nix-profile/etc/profile.d/nix.sh"
+           if test -f /run/.toolboxenv; then
+             source "$HOME/.nix-profile/etc/profile.d/nix.sh"
 
-      foot-title() {
-        echo -ne "\\033]0;$1\\007"
-      }
+      # Add local bin path
+      export PATH="$HOME/.local/bin:$PATH"
+
+      # Add onepassword-cli group required for 1password CLI integration to work
+      if ! grep -q onepassword-cli /etc/group; then
+        echo "Adding 'onepassword-cli' group"
+        sudo groupadd -f onepassword-cli
+        sudo usermod -aG onepassword-cli thrix
+      fi
+
+      # 1password needs to be run with the correct group for app CLI integration to work
+             run-op() {
+        sg onepassword-cli -c "op $*"
+             }
+           else
+      source $HOME/.bashrc.backup
+           fi
+
+           foot-title() {
+             echo -ne "\\033]0;$1\\007"
+           }
     '';
 
     # Aliases
@@ -131,11 +153,22 @@
       flatpak = "flatpak-spawn --host flatpak";
       podman = "flatpak-spawn --host podman";
       rpm-ostree = "flatpak-spawn --host rpm-ostree";
+
+      # 1password with plugins
+      op = "run-op";
+      gh = "run-op plugin run -- gh";
+      glab = "run-op plugin run -- glab";
     };
   };
 
   # Bat
   programs.bat.enable = true;
+
+  # Direnv
+  programs.direnv = {
+    enable = true;
+    enableBashIntegration = true;
+  };
 
   # Firefox
   programs.firefox = {
@@ -230,14 +263,14 @@
   # Man
   programs.man = {
     enable = true;
-    # generateCaches = true;
+    generateCaches = true;
   };
 
   # NixVim
   programs.nixvim = {
     enable = true;
 
-    options = {
+    opts = {
       shiftwidth = 2;
       mouse = "";
     };
