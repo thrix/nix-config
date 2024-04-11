@@ -1,6 +1,6 @@
 Summary: thrix's RPM configuration for Fedora Sericea
 Name: thrix-config
-Version: 1.0.5
+Version: 1.0.6
 Release: 1
 License: MIT
 
@@ -19,6 +19,8 @@ cp %{_sourcedir}/thrix-config*/com.1password.1Password.policy %{buildroot}/usr/s
 /usr/share/polkit-1/actions/com.1password.1Password.policy
 
 %changelog
+* Thu Apr 11 2024 Miroslav Vadkerti <mvadkert@redhat.com> 1.0.6-1
+- Fix building (mvadkert@redhat.com)
 * Thu Apr 11 2024 Miroslav Vadkerti <mvadkert@redhat.com> 1.0.5-1
 - Create installation directory
 * Thu Apr 11 2024 Miroslav Vadkerti <mvadkert@redhat.com> 1.0.4-1
