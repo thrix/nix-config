@@ -4,7 +4,7 @@ Version: 1.0.6
 Release: 1
 License: MIT
 
-Requires: font-awesome-config nautilus polkit-gnome
+Requires: fontawesome-fonts-all nautilus polkit-gnome
 
 %description
 Configuration rpm for Fedora Sericea
