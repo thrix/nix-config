@@ -15,13 +15,18 @@ Usage:
 
 endef
 
+##@ Home Manager
+
+switch:  ## Run home-manager switch
+	home-manager switch
+
 ##@ Install
 
 install/pre-commit:  ## Install pre-commit hooks
 	pre-commit install
 
 install/system:  ## Install system packages
-	flatpak-spawn --host rpm-ostree install -A fontawesome-fonts-all lxpolkit nautilus
+	flatpak-spawn --host rpm-ostree install -A rpm/*.rpm
 
 # See https://www.thapaliya.com/en/writings/well-documented-makefiles/ for details.
 reverse = $(if $(1),$(call reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))

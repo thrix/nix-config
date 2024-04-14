@@ -13,6 +13,8 @@
     _1password
     _1password-gui
     alejandra
+    asdf-vm
+    bats
     deadnix
     glab
     gnumake
@@ -21,8 +23,11 @@
     jq
     pre-commit
     python39
+    ruby
     shellcheck
+    shfmt
     silver-searcher
+    xdg-utils
     yq
   ];
 
@@ -86,6 +91,11 @@
     done
   '';
 
+  # Before systemd reload
+  home.activation.systemdWorkarounds = lib.hm.dag.entryBefore ["reloadSystemd"] ''
+    run /usr/bin/flatpak-spawn --host dbus-update-activation-environment WAYLAND_DISPLAY
+  '';
+
   # For various final configurations
   home.activation.toolboxSetup = lib.hm.dag.entryAfter ["reloadSystemd"] ''
     # Only for toolbox
@@ -147,6 +157,13 @@
       l = "ls -alh";
       ll = "ls -l";
       ls = "ls --color=tty";
+
+      # home-manager
+      hs = "make -C $HOME/git/github.com/thrix/nix-config switch";
+
+      # nvim
+      n = "nvim";
+      nd = "nvim -d";
 
       # host commands
       firefox = "flatpak-spawn --host firefox";
@@ -231,19 +248,34 @@
 
     aliases = {
       c = "commit";
+      cf = "commit -m fixup";
+      caf = "commit -a -m fixup";
       cam = "commit --amend -vs";
 
       p = "push";
       pf = "push --force";
-      pr = "pull --rebase";
+      pr = "pull --rebase --autostash";
+
+      r = "rebase";
+      ri2 = "git rebase -i HEAD~2";
+      ri3 = "git rebase -i HEAD~3";
+      ri4 = "git rebase -i HEAD~4";
+      ri5 = "git rebase -i HEAD~5";
+      ri6 = "git rebase -i HEAD~6";
     };
 
     delta = {
       enable = true;
+
+      options = {
+        line-numbers = true;
+        side-by-side = true;
+      };
     };
 
     extraConfig = {
       init.defaultBranch = "main";
+      push.autoSetupRemote = "true";
     };
 
     userName = "Miroslav Vadkerti";
@@ -316,17 +348,19 @@
   };
 
   # XDG
-  xdg = {
-    enable = true;
+  #xdg = {
+  #  enable = true;
+  #  mime.enable = true;
+  #  mimeApps.enable = true;
 
-    desktopEntries = {
-      "1password" = {
-        name = "1password";
-        genericName = "1password desktop application";
-        exec = "toolbox run --container nix 1password";
-        terminal = false;
-        categories = ["Application" "Utility"];
-      };
-    };
-  };
+  #  desktopEntries = {
+  #    "1password" = {
+  #      name = "1password";
+  #      genericName = "1password desktop application";
+  #      exec = "toolbox run --container nix 1password";
+  #      terminal = false;
+  #      categories = ["Application" "Utility"];
+  #    };
+  #  };
+  #};
 }

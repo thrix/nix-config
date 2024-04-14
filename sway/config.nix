@@ -18,8 +18,9 @@ in {
   };
 
   keybindings = lib.mkOptionDefault {
-    "${modifier}+Return" = "exec ${terminal} toolbox enter nix";
+    "${modifier}+Return" = "exec ${terminal} toolbox enter nix --silent";
     "${modifier}+Shift+Return" = "exec ${terminal}";
+    "${modifier}+Shift+p" = "exec toolbox run --container nix 1password --quick-access";
   };
 
   output = {
@@ -30,11 +31,15 @@ in {
 
   startup = [
     {
-      command = "toolbox run --container nix 1password";
+      command = "toolbox run --container nix 1password --silent";
       always = true;
     }
     {
       command = "/usr/libexec/polkit-gnome-authentication-agent-1";
+      always = true;
+    }
+    {
+      command = "nm-applet";
       always = true;
     }
   ];

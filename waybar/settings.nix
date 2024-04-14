@@ -6,10 +6,10 @@
       "sway/workspaces"
       "sway/mode"
       "sway/scratchpad"
+      "idle_inhibitor"
     ];
     modules-center = [
       # "sway/window"
-      "idle_inhibitor"
     ];
     modules-right = [
       "pulseaudio"
@@ -103,7 +103,7 @@
       bat = "BAT2";
     };
     network = {
-      format-wifi = "{essid} ({signalStrength}%) ";
+      format-wifi = "{essid} ({signalStrength}%)   {bandwidthUpBits}  {bandwidthDownBits} ";
       format-ethernet = "{ipaddr}/{cidr} ";
       tooltip-format = "{ifname} via {gwaddr} ";
       format-linked = "{ifname} (No IP) ";
