@@ -18,7 +18,7 @@ in {
   };
 
   keybindings = lib.mkOptionDefault {
-    "${modifier}+Return" = "exec ${terminal} toolbox enter nix --silent";
+    "${modifier}+Return" = "exec ${terminal} toolbox enter nix";
     "${modifier}+Shift+Return" = "exec ${terminal}";
     "${modifier}+Shift+p" = "exec toolbox run --container nix 1password --quick-access";
   };

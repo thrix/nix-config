@@ -27,6 +27,7 @@
     shellcheck
     shfmt
     silver-searcher
+    slack
     xdg-utils
     yq
   ];
@@ -35,6 +36,7 @@
     builtins.elem (lib.getName pkg) [
       "1password"
       "1password-cli"
+      "slack"
     ];
 
   # Environment variables
@@ -48,6 +50,7 @@
   # Restore host specific configuration links, before checking link targets
   home.activation.restoreNixLinks = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
     files="
+      $HOME/.config/mimeapps.list
       $HOME/.config/sway/config
       $HOME/.config/waybar/config
       $HOME/.config/waybar/style.css
@@ -67,6 +70,7 @@
   # For host configuration we need to create copy of the files, so the host system can see them
   home.activation.createHostConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
     files="
+      $HOME/.config/mimeapps.list
       $HOME/.config/sway/config
       $HOME/.config/waybar/config
       $HOME/.config/waybar/style.css
@@ -89,6 +93,17 @@
         cp "$target" "$file"
         chmod 644 "$file"
     done
+
+    desktop_entries="
+      1password
+      slack
+    "
+
+    for entry in $desktop_entries; do
+      echo -e "\e[32mCreating desktop entry '$entry.desktop'\e[0m"
+      cp -f $HOME/.nix-profile/share/applications/$entry.desktop $HOME/.local/share/applications
+    done
+
   '';
 
   # Before systemd reload
@@ -170,6 +185,7 @@
       flatpak = "flatpak-spawn --host flatpak";
       podman = "flatpak-spawn --host podman";
       rpm-ostree = "flatpak-spawn --host rpm-ostree";
+      xdg-open = "flatpak-spawn --host xdg-open";
 
       # 1password with plugins
       op = "run-op";
@@ -347,20 +363,31 @@
     config = import ./sway/config.nix {inherit lib;};
   };
 
-  # XDG
-  #xdg = {
-  #  enable = true;
-  #  mime.enable = true;
-  #  mimeApps.enable = true;
-
-  #  desktopEntries = {
-  #    "1password" = {
-  #      name = "1password";
-  #      genericName = "1password desktop application";
-  #      exec = "toolbox run --container nix 1password";
-  #      terminal = false;
-  #      categories = ["Application" "Utility"];
-  #    };
-  #  };
-  #};
+  # Xdg
+  xdg = {
+    enable = true;
+    desktopEntries = {
+      slack = {
+        name = "Slack";
+        type = "Application";
+        exec = "toolbox run --container nix slack %U";
+        icon = "slack";
+        categories = ["Network" "InstantMessaging"];
+      };
+      "1password" = {
+        name = "1Password";
+        type = "Application";
+        exec = "toolbox run --container nix 1password %U";
+        icon = "1password";
+        categories = ["Office"];
+      };
+    };
+    mimeApps = {
+      enable = true;
+      defaultApplications = {
+        "x-scheme-handler/http" = "firefox.desktop";
+        "x-scheme-handler/https" = "firefox.desktop";
+      };
+    };
+  };
 }
