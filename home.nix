@@ -16,9 +16,11 @@
     asdf-vm
     bats
     deadnix
+    dnsutils
     glab
     gnumake
-    hatch
+    # https://github.com/NixOS/nixpkgs/issues/308121
+    # hatch
     htop
     jq
     pre-commit
@@ -270,6 +272,9 @@
 
       p = "push";
       pf = "push --force";
+      pm = "push -o merge_request.create";
+      pmd = "push -o merge_request.create -o merge_request.draft";
+      pms = "push -o merge_request.create -o merge_request.target=staging";
       pr = "pull --rebase --autostash";
 
       r = "rebase";
@@ -360,6 +365,7 @@
   wayland.windowManager.sway = {
     enable = true;
     package = pkgs.emptyDirectory;
+    checkConfig = false;
     config = import ./sway/config.nix {inherit lib;};
   };
 
