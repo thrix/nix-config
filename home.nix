@@ -1,5 +1,5 @@
 {
-  config,
+  # config,
   lib,
   pkgs,
   ...
@@ -17,14 +17,15 @@
     bats
     deadnix
     dnsutils
+    dropbox
     glab
     gnumake
-    # https://github.com/NixOS/nixpkgs/issues/308121
-    # hatch
+    hatch
     htop
     jq
     pre-commit
     python39
+    python39Packages.virtualenvwrapper
     ruby
     shellcheck
     shfmt
@@ -38,6 +39,7 @@
     builtins.elem (lib.getName pkg) [
       "1password"
       "1password-cli"
+      "dropbox"
       "slack"
     ];
 
@@ -47,6 +49,7 @@
     SSH_AUTH_SOCK = "$HOME/.1password/agent.sock";
     OP_BIOMETRIC_UNLOCK_ENABLED = "true";
     OP_PLUGIN_ALIASES_SOURCED = "1";
+    PYTHON_KEYRING_BACKEND = "keyring.backends.null.Keyring";
   };
 
   # Restore host specific configuration links, before checking link targets
@@ -102,15 +105,21 @@
     "
 
     for entry in $desktop_entries; do
+      src="$HOME/.nix-profile/share/applications/$entry.desktop"
+
+      # do not break if the file does not yet exist
+      test -e $src || continue
+
       echo -e "\e[32mCreating desktop entry '$entry.desktop'\e[0m"
-      cp -f $HOME/.nix-profile/share/applications/$entry.desktop $HOME/.local/share/applications
+      cp -f $src $HOME/.local/share/applications
     done
 
   '';
 
   # Before systemd reload
   home.activation.systemdWorkarounds = lib.hm.dag.entryBefore ["reloadSystemd"] ''
-    run /usr/bin/flatpak-spawn --host dbus-update-activation-environment WAYLAND_DISPLAY
+    # Update environment used for D-Bus session services
+    run /usr/bin/flatpak-spawn --host --env=DISPLAY=:0 dbus-update-activation-environment --all --systemd
   '';
 
   # For various final configurations
@@ -141,25 +150,27 @@
     initExtra = ''
            if test -f /run/.toolboxenv; then
              source "$HOME/.nix-profile/etc/profile.d/nix.sh"
-
-      # Add local bin path
-      export PATH="$HOME/.local/bin:$PATH"
-
-      # Add onepassword-cli group required for 1password CLI integration to work
-      if ! grep -q onepassword-cli /etc/group; then
-        echo "Adding 'onepassword-cli' group"
-        sudo groupadd -f onepassword-cli
-        sudo usermod -aG onepassword-cli thrix
-      fi
-
-      # 1password needs to be run with the correct group for app CLI integration to work
-             run-op() {
-        sg onepassword-cli -c "op $*"
-             }
            else
+             # fallback to original bashrc outside of toolbox
       source $HOME/.bashrc.backup
            fi
 
+           # Add local bin path
+           export PATH="$HOME/.local/bin:$PATH"
+
+           # Add onepassword-cli group required for 1password CLI integration to work
+           if ! grep -q onepassword-cli /etc/group; then
+             echo "Adding 'onepassword-cli' group"
+             sudo groupadd -f onepassword-cli
+             sudo usermod -aG onepassword-cli thrix
+           fi
+
+           # 1password needs to be run with the correct group for app CLI integration to work
+           run-op() {
+             sg onepassword-cli -c "op $*"
+           }
+
+           # set foot title
            foot-title() {
              echo -ne "\\033]0;$1\\007"
            }
@@ -183,11 +194,11 @@
       nd = "nvim -d";
 
       # host commands
-      firefox = "flatpak-spawn --host firefox";
+      firefox = "flatpak-spawn --env=DISPLAY=:0 --host firefox";
       flatpak = "flatpak-spawn --host flatpak";
       podman = "flatpak-spawn --host podman";
       rpm-ostree = "flatpak-spawn --host rpm-ostree";
-      xdg-open = "flatpak-spawn --host xdg-open";
+      xdg-open = "flatpak-spawn --env=DISPLAY=:0 --host xdg-open";
 
       # 1password with plugins
       op = "run-op";
@@ -373,6 +384,27 @@
   xdg = {
     enable = true;
     desktopEntries = {
+      "1password" = {
+        name = "1Password";
+        type = "Application";
+        exec = "toolbox run --container nix 1password %U";
+        icon = "1password";
+        categories = ["Network" "Security"];
+      };
+      dropbox = {
+        name = "Dropbox";
+        type = "Application";
+        exec = "toolbox run --container nix dropbox";
+        icon = "dropbox";
+        categories = ["Network" "FileTransfer"];
+      };
+      "firefox" = {
+        name = "Firefox";
+        type = "Application";
+        exec = "flatpak-spawn --host firefox %U";
+        icon = "1password";
+        categories = ["Application" "Network" "WebBrowser"];
+      };
       slack = {
         name = "Slack";
         type = "Application";
@@ -380,19 +412,13 @@
         icon = "slack";
         categories = ["Network" "InstantMessaging"];
       };
-      "1password" = {
-        name = "1Password";
-        type = "Application";
-        exec = "toolbox run --container nix 1password %U";
-        icon = "1password";
-        categories = ["Office"];
-      };
     };
     mimeApps = {
       enable = true;
       defaultApplications = {
         "x-scheme-handler/http" = "firefox.desktop";
         "x-scheme-handler/https" = "firefox.desktop";
+        "x-scheme-handler/slack" = "slack.desktop";
       };
     };
   };
