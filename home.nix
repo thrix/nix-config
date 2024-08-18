@@ -3,13 +3,10 @@
   lib,
   pkgs,
   ...
-}: {
-  home.username = "thrix";
-  home.homeDirectory = "/home/thrix";
+}: let
+  fedoraPkgs = import ./pkgs/fedora.nix {inherit pkgs;};
 
-  home.stateVersion = "23.11";
-
-  home.packages = with pkgs; [
+  nixPackages = with pkgs; [
     _1password
     _1password-gui
     alejandra
@@ -31,9 +28,21 @@
     shfmt
     silver-searcher
     slack
+    virtualenv
     xdg-utils
-    yq
+    yq-go
   ];
+
+  fedoraPackages = with fedoraPkgs; [
+    sway
+  ];
+in {
+  home.username = "thrix";
+  home.homeDirectory = "/home/thrix";
+
+  home.stateVersion = "23.11";
+
+  home.packages = nixPackages ++ fedoraPackages;
 
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
@@ -120,6 +129,9 @@
   home.activation.systemdWorkarounds = lib.hm.dag.entryBefore ["reloadSystemd"] ''
     # Update environment used for D-Bus session services
     run /usr/bin/flatpak-spawn --host --env=DISPLAY=:0 dbus-update-activation-environment --all --systemd
+    # Restart user services having issues
+    run /usr/bin/systemctl --user restart dunst.service
+    run /usr/bin/systemctl --user restart xdg-desktop-portal-gtk.service
   '';
 
   # For various final configurations
@@ -297,12 +309,17 @@
     };
 
     delta = {
-      enable = true;
+      # 2024-08-18 - disabled due to https://github.com/NixOS/nixpkgs/issues/332957, does not compile
+      # enable = true;
 
       options = {
         line-numbers = true;
         side-by-side = true;
       };
+    };
+
+    difftastic = {
+      enable = true;
     };
 
     extraConfig = {
@@ -375,7 +392,7 @@
   # Sway
   wayland.windowManager.sway = {
     enable = true;
-    package = pkgs.emptyDirectory;
+    package = fedoraPkgs.sway;
     checkConfig = false;
     config = import ./sway/config.nix {inherit lib;};
   };
