@@ -125,15 +125,6 @@ in {
 
   '';
 
-  # Before systemd reload
-  home.activation.systemdWorkarounds = lib.hm.dag.entryBefore ["reloadSystemd"] ''
-    # Update environment used for D-Bus session services
-    run /usr/bin/flatpak-spawn --host --env=DISPLAY=:0 dbus-update-activation-environment --all --systemd
-    # Restart user services having issues
-    run /usr/bin/systemctl --user restart dunst.service
-    run /usr/bin/systemctl --user restart xdg-desktop-portal-gtk.service
-  '';
-
   # For various final configurations
   home.activation.toolboxSetup = lib.hm.dag.entryAfter ["reloadSystemd"] ''
     # Only for toolbox
@@ -393,8 +384,16 @@ in {
   wayland.windowManager.sway = {
     enable = true;
     package = fedoraPkgs.sway;
-    checkConfig = false;
+
     config = import ./sway/config.nix {inherit lib;};
+
+    # Not able to make the validation work for now :(
+    checkConfig = false;
+
+    systemd.variables = [
+      "--all"
+      "--systemd"
+    ];
   };
 
   # Xdg

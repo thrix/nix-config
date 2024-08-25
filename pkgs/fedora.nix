@@ -9,10 +9,13 @@
 
     installPhase = ''
             mkdir -p $out/bin
+
+            # swaymsg
             cat <<EOF > $out/bin/swaymsg
       #!/bin/bash
-      flatpak-spawn --host swaymsg "\$@"
+      /usr/bin/flatpak-spawn --host swaymsg "\$@"
       EOF
+
             chmod +x $out/bin/swaymsg
     '';
   };
