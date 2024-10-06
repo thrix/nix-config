@@ -35,6 +35,19 @@ in {
     "XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
     "XF86AudioRaiseVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ +5%";
     "XF86AudioLowerVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ -5%";
+
+    # emoticon chooser
+    "Ctrl+Alt+e" = "exec flatpak run com.tomjwatson.Emote";
+
+    # screen lock
+    "Ctrl+Alt+l" = "exec swaylock";
+  };
+
+  input = {
+    "*" = {
+      "xkb_layout" = "us,cz(qwerty)";
+      "xkb_options" = "grp:alt_shift_toggle";
+    };
   };
 
   output = {

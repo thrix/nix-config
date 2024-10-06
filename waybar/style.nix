@@ -258,7 +258,7 @@
       background: #00b093;
       padding: 0 5px;
       margin: 0 5px;
-      min-width: 16px;
+      min-width: 22px;
       color: #ffffff;
       background-color: transparent;
   }

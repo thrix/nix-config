@@ -4,8 +4,6 @@
   pkgs,
   ...
 }: let
-  fedoraPkgs = import ./pkgs/fedora.nix {inherit pkgs;};
-
   nixPackages = with pkgs; [
     _1password
     _1password-gui
@@ -17,24 +15,26 @@
     dropbox
     glab
     gnumake
+    goss
     hatch
     htop
     jq
+    kubectl
+    openshift
     pre-commit
-    python39
-    python39Packages.virtualenvwrapper
     ruby
     shellcheck
     shfmt
     silver-searcher
     slack
+    vault-bin
     virtualenv
-    xdg-utils
     yq-go
   ];
 
-  fedoraPackages = with fedoraPkgs; [
-    sway
+  customPkgs = import ./pkgs/custom.nix {inherit pkgs;};
+  customPackages = with customPkgs; [
+    fedoraHost
   ];
 in {
   home.username = "thrix";
@@ -42,7 +42,7 @@ in {
 
   home.stateVersion = "23.11";
 
-  home.packages = nixPackages ++ fedoraPackages;
+  home.packages = nixPackages ++ customPackages;
 
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
@@ -50,6 +50,7 @@ in {
       "1password-cli"
       "dropbox"
       "slack"
+      "vault-bin"
     ];
 
   # Environment variables
@@ -59,6 +60,7 @@ in {
     OP_BIOMETRIC_UNLOCK_ENABLED = "true";
     OP_PLUGIN_ALIASES_SOURCED = "1";
     PYTHON_KEYRING_BACKEND = "keyring.backends.null.Keyring";
+    TMT_WORKDIR_ROOT = "$HOME/.local/share/tmt";
   };
 
   # Restore host specific configuration links, before checking link targets
@@ -196,17 +198,13 @@ in {
       n = "nvim";
       nd = "nvim -d";
 
-      # host commands
-      firefox = "flatpak-spawn --env=DISPLAY=:0 --host firefox";
-      flatpak = "flatpak-spawn --host flatpak";
-      podman = "flatpak-spawn --host podman";
-      rpm-ostree = "flatpak-spawn --host rpm-ostree";
-      xdg-open = "flatpak-spawn --env=DISPLAY=:0 --host xdg-open";
-
       # 1password with plugins
       op = "run-op";
       gh = "run-op plugin run -- gh";
       glab = "run-op plugin run -- glab";
+
+      # redhat
+      kinit-rh = "op item get --fields password w5ratd55r6s527yqegqquozpya | kinit $(op item get --fields kinit_username w5ratd55r6s527yqegqquozpya)";
     };
   };
 
@@ -383,17 +381,15 @@ in {
   # Sway
   wayland.windowManager.sway = {
     enable = true;
-    package = fedoraPkgs.sway;
+    package = customPkgs.fedoraHost;
 
     config = import ./sway/config.nix {inherit lib;};
 
     # Not able to make the validation work for now :(
     checkConfig = false;
 
-    systemd.variables = [
-      "--all"
-      "--systemd"
-    ];
+    # Disable systemd integration, managed by Silverblue.
+    systemd.enable = false;
   };
 
   # Xdg
@@ -432,8 +428,8 @@ in {
     mimeApps = {
       enable = true;
       defaultApplications = {
-        "x-scheme-handler/http" = "firefox.desktop";
-        "x-scheme-handler/https" = "firefox.desktop";
+        "x-scheme-handler/http" = "google-chrome.desktop";
+        "x-scheme-handler/https" = "google-chrome.desktop";
         "x-scheme-handler/slack" = "slack.desktop";
       };
     };

@@ -35,7 +35,7 @@
       };
     };
     "sway/language" = {
-      format = "{flag} {short}";
+      format = "{flag}";
     };
     "sway/mode" = {
       format = "<span style=\"italic\">{}</span>";
