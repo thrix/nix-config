@@ -26,8 +26,8 @@
       "tray"
     ];
     keyboard-state = {
-      numlock = true;
       capslock = true;
+      numlock = true;
       format = "{name} {icon}";
       format-icons = {
         locked = "";

@@ -43,6 +43,22 @@
     };
   };
 
+  mini = {
+    enable = true;
+
+    mockDevIcons = true;
+
+    modules = {
+      icons = {
+        enable = true;
+      };
+    };
+  };
+
+  telescope = {
+    enable = true;
+  };
+
   treesitter = {
     enable = true;
 
@@ -54,6 +70,8 @@
         "gitattributes"
         "gitcommit"
         "gitignore"
+        "just"
+        "make"
         "python"
       ];
     };

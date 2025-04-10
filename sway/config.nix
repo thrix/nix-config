@@ -45,7 +45,11 @@ in {
 
   input = {
     "*" = {
+      # NOTE: this influences waybar
       "xkb_layout" = "us,cz(qwerty)";
+      # NOTE: alt+shift to toggle keyboard layout
+      # NOTE: capslock detection in waybar needs settings both capslocks
+      #       https://github.com/Alexays/Waybar/issues/2215
       "xkb_options" = "grp:alt_shift_toggle";
     };
   };
@@ -62,11 +66,17 @@ in {
       always = true;
     }
     {
-      command = "/usr/libexec/polkit-gnome-authentication-agent-1";
+      # NOTE: Fedora 41 removed polkit-gnome, use `mate-polkit` instead
+      command = "/usr/libexec/polkit-mate-authentication-agent-1";
       always = true;
     }
     {
       command = "nm-applet";
+      always = true;
+    }
+    {
+      # https://github.com/swaywm/sway/wiki#systemd-and-dbus-activation-environments
+      command = "dbus-update-activation-environment --systemd --all";
       always = true;
     }
   ];

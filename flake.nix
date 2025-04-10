@@ -2,12 +2,11 @@
   description = "Nix configuration of thrix";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:thrix/nixpkgs/dgoss-fix-binary";
 
     home-manager = {
-      # https://github.com/nix-community/home-manager/pull/5074
       url = "github:nix-community/home-manager";
-      # url = "github:thrix/home-manager/waybar-package-null";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

@@ -5,30 +5,37 @@
   ...
 }: let
   nixPackages = with pkgs; [
-    _1password
+    _1password-cli
     _1password-gui
     alejandra
     asdf-vm
     bats
+    cloud-nuke
+    dgoss
     deadnix
     dnsutils
     dropbox
     glab
     gnumake
     goss
-    hatch
     htop
+    httpie
     jq
+    just
     kubectl
+    ibmcloud-cli
     openshift
+    packer
     pre-commit
     ruby
     shellcheck
     shfmt
     silver-searcher
     slack
+    stern
+    tmux
     vault-bin
-    virtualenv
+    yamllint
     yq-go
   ];
 
@@ -49,27 +56,45 @@ in {
       "1password"
       "1password-cli"
       "dropbox"
+      "packer"
       "slack"
       "vault-bin"
     ];
 
   # Environment variables
   home.sessionVariables = {
+    # standard env vars
     EDITOR = "nvim";
+    PAGER = "less -Rf";
+
+    # TERM set to `foot` is not recognized everywhere
+    TERM = "xterm";
+
+    # 1password
     SSH_AUTH_SOCK = "$HOME/.1password/agent.sock";
     OP_BIOMETRIC_UNLOCK_ENABLED = "true";
     OP_PLUGIN_ALIASES_SOURCED = "1";
+
+    # Testing Farm
     PYTHON_KEYRING_BACKEND = "keyring.backends.null.Keyring";
+
+    # tmt
     TMT_WORKDIR_ROOT = "$HOME/.local/share/tmt";
+
+    # python requests
+    REQUESTS_CA_BUNDLE = "/etc/pki/tls/certs/ca-bundle.crt";
+
+    # dgoss
+    CONTAINER_RUNTIME = "podman";
   };
 
   # Restore host specific configuration links, before checking link targets
   home.activation.restoreNixLinks = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
     files="
-      $HOME/.config/mimeapps.list
       $HOME/.config/sway/config
       $HOME/.config/waybar/config
       $HOME/.config/waybar/style.css
+      $HOME/.local/share/applications/mimeapps.list
       $HOME/.mozilla/firefox/profiles.ini
       $HOME/.mozilla/firefox/thrix/containers.json
       $HOME/.mozilla/firefox/thrix/search.json.mozlz4
@@ -86,10 +111,10 @@ in {
   # For host configuration we need to create copy of the files, so the host system can see them
   home.activation.createHostConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
     files="
-      $HOME/.config/mimeapps.list
       $HOME/.config/sway/config
       $HOME/.config/waybar/config
       $HOME/.config/waybar/style.css
+      $HOME/.local/share/applications/mimeapps.list
       $HOME/.mozilla/firefox/profiles.ini
       $HOME/.mozilla/firefox/thrix/containers.json
       $HOME/.mozilla/firefox/thrix/search.json.mozlz4
@@ -124,7 +149,6 @@ in {
       echo -e "\e[32mCreating desktop entry '$entry.desktop'\e[0m"
       cp -f $src $HOME/.local/share/applications
     done
-
   '';
 
   # For various final configurations
@@ -154,9 +178,9 @@ in {
     # Required to load nix in nix-toolbox
     initExtra = ''
            if test -f /run/.toolboxenv; then
-             source "$HOME/.nix-profile/etc/profile.d/nix.sh"
+      source "$HOME/.nix-profile/etc/profile.d/nix.sh"
            else
-             # fallback to original bashrc outside of toolbox
+      # fallback to original bashrc outside of toolbox
       source $HOME/.bashrc.backup
            fi
 
@@ -165,20 +189,23 @@ in {
 
            # Add onepassword-cli group required for 1password CLI integration to work
            if ! grep -q onepassword-cli /etc/group; then
-             echo "Adding 'onepassword-cli' group"
-             sudo groupadd -f onepassword-cli
-             sudo usermod -aG onepassword-cli thrix
+      echo "Adding 'onepassword-cli' group"
+      sudo groupadd -f onepassword-cli
+      sudo usermod -aG onepassword-cli thrix
            fi
 
            # 1password needs to be run with the correct group for app CLI integration to work
            run-op() {
-             sg onepassword-cli -c "op $*"
+      sg onepassword-cli -c "op $*"
            }
 
            # set foot title
            foot-title() {
-             echo -ne "\\033]0;$1\\007"
+      echo -ne "\\033]0;$1\\007"
            }
+
+           # resolve issues with dbus activation environment
+           flatpak-spawn --host --env=DISPLAY=:0 dbus-update-activation-environment --all --systemd
     '';
 
     # Aliases
@@ -204,7 +231,7 @@ in {
       glab = "run-op plugin run -- glab";
 
       # redhat
-      kinit-rh = "op item get --fields password w5ratd55r6s527yqegqquozpya | kinit $(op item get --fields kinit_username w5ratd55r6s527yqegqquozpya)";
+      kinit-rh = "op read \"op://redhat/Red\\ Hat\\ Kerberos/password\" | kinit $(op read \"op://redhat/Red\\ Hat\\ Kerberos/kinit_username\")";
     };
   };
 
@@ -341,6 +368,8 @@ in {
     enable = true;
 
     opts = {
+      expandtab = true;
+      relativenumber = true;
       shiftwidth = 2;
       mouse = "";
     };
@@ -357,6 +386,10 @@ in {
         extraOptions = {
           IdentityAgent = "~/.1password/agent.sock";
         };
+      };
+      "mvadkert" = {
+        hostname = "10.0.198.38";
+        user = "mvadkert";
       };
     };
   };
@@ -414,7 +447,7 @@ in {
         name = "Firefox";
         type = "Application";
         exec = "flatpak-spawn --host firefox %U";
-        icon = "1password";
+        icon = "firefox";
         categories = ["Application" "Network" "WebBrowser"];
       };
       slack = {
@@ -428,10 +461,43 @@ in {
     mimeApps = {
       enable = true;
       defaultApplications = {
+        "text/html" = "google-chrome.desktop";
         "x-scheme-handler/http" = "google-chrome.desktop";
         "x-scheme-handler/https" = "google-chrome.desktop";
         "x-scheme-handler/slack" = "slack.desktop";
+        "x-directory/normal" = "org.gnome.Nautilus.desktop";
+        "inode/directory" = "org.gnome.Nautilus.desktop";
       };
     };
   };
+
+  # Kanshi
+  # services.kanshi = {
+  #   enable = true;
+  #   package = pkgs.emptyDirectory;
+  #   profiles = {
+  #     undocked = {
+  #       name = "undocked";
+  #       outputs = [
+  #         { name = "eDP-1"; status = true; mode = "1920x1080"; position = "0,0"; }
+  #         { name = "*"; status = false; }
+  #       ];
+  #     };
+  #     "docked" = {
+  #       name = "docked";
+  #       outputs = [
+  #         { name = "DP-7"; status = true; mode = "1920x1080"; position = "0,0"; }
+  #         { name = "DP-9"; status = true; mode = "1680x1050"; position = "1920,0"; }
+  #         { name = "eDP-1"; status = true; mode = "1920x1080"; position = "1920,1050"; }
+  #       ];
+  #     };
+  #     "presentation" = {
+  #       name = "presentation";
+  #       outputs = [
+  #         { name = "eDP-1"; status = true; mode = "1920x1080"; position = "0,0"; }
+  #         { name = "*"; status = true; position = "1920,0"; }
+  #       ];
+  #     };
+  #   };
+  # };
 }
