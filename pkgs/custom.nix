@@ -55,9 +55,19 @@
       TESTING_FARM_API_TOKEN=\$(sg onepassword-cli -c "op read op://testing-farm/ccyqkqhkeqalbxnuhgft4lli2y/notesPlain") testing-farm "\$@"
       EOF
 
+            cat <<EOF > $out/bin/testing-farm-admin-public
+      #!/bin/bash
+      TESTING_FARM_API_TOKEN=\$(sg onepassword-cli -c "op read op://testing-farm/7coocnzmv53riasn3dh3pk3yue/notesPlain") testing-farm "\$@"
+      EOF
+
             cat <<EOF > $out/bin/testing-farm-redhat
       #!/bin/bash
       TESTING_FARM_API_TOKEN=\$(sg onepassword-cli -c "op read op://testing-farm/b2n7fihogcxd75sy6qdva7bw7e/notesPlain") testing-farm "\$@"
+      EOF
+
+            cat <<EOF > $out/bin/testing-farm-admin-redhat
+      #!/bin/bash
+      TESTING_FARM_API_TOKEN=\$(sg onepassword-cli -c "op read op://testing-farm/m2572j34froftf4sespnsuippi/notesPlain") testing-farm "\$@"
       EOF
 
             cat <<EOF > $out/bin/testing-farm-staging-public
@@ -67,9 +77,20 @@
       testing-farm "\$@"
       EOF
 
+            cat <<EOF > $out/bin/rh-jira
+      #!/bin/bash
+      JIRA_API_TOKEN=\$(sg onepassword-cli -c "op read op://redhat/2hc7nqkhez4bjab6vsh737at3m/notesPlain") \
+      jira "\$@"
+      EOF
+
             cat <<EOF > $out/bin/ujust
       #!/bin/bash
       /usr/bin/flatpak-spawn --host ujust "\$@"
+      EOF
+
+            cat <<EOF > $out/bin/bluebuild
+      #!/bin/bash
+      /run/host/bin/bluebuild "\$@"
       EOF
 
             chmod +x $out/bin/*

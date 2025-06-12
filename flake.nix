@@ -2,8 +2,8 @@
   description = "Nix configuration of thrix";
 
   inputs = {
-    # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs.url = "github:thrix/nixpkgs/dgoss-fix-binary";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # nixpkgs.url = "github:thrix/nixpkgs/dgoss-fix-binary";
 
     home-manager = {
       url = "github:nix-community/home-manager";

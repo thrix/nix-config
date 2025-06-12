@@ -11,8 +11,9 @@
     asdf-vm
     bats
     cloud-nuke
-    dgoss
     deadnix
+    dgoss
+    discord
     dnsutils
     dropbox
     glab
@@ -20,10 +21,13 @@
     goss
     htop
     httpie
+    jira-cli-go
     jq
     just
     kubectl
+    kubevirt
     ibmcloud-cli
+    iosevka
     openshift
     packer
     pre-commit
@@ -33,7 +37,6 @@
     silver-searcher
     slack
     stern
-    tmux
     vault-bin
     yamllint
     yq-go
@@ -43,6 +46,10 @@
   customPackages = with customPkgs; [
     fedoraHost
   ];
+
+  # shared settings across various programs
+  terminalType = "screen-256color";
+  terminalHistoryLimit = 100000;
 in {
   home.username = "thrix";
   home.homeDirectory = "/home/thrix";
@@ -55,7 +62,10 @@ in {
     builtins.elem (lib.getName pkg) [
       "1password"
       "1password-cli"
+      "discord"
       "dropbox"
+      "firefox-bin"
+      "firefox-release-bin-unwrapped"
       "packer"
       "slack"
       "vault-bin"
@@ -68,7 +78,7 @@ in {
     PAGER = "less -Rf";
 
     # TERM set to `foot` is not recognized everywhere
-    TERM = "xterm";
+    TERM = terminalType;
 
     # 1password
     SSH_AUTH_SOCK = "$HOME/.1password/agent.sock";
@@ -77,6 +87,8 @@ in {
 
     # Testing Farm
     PYTHON_KEYRING_BACKEND = "keyring.backends.null.Keyring";
+
+    HELLO = "meho";
 
     # tmt
     TMT_WORKDIR_ROOT = "$HOME/.local/share/tmt";
@@ -91,6 +103,7 @@ in {
   # Restore host specific configuration links, before checking link targets
   home.activation.restoreNixLinks = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
     files="
+      $HOME/.config/foot/foot.ini
       $HOME/.config/sway/config
       $HOME/.config/waybar/config
       $HOME/.config/waybar/style.css
@@ -111,6 +124,7 @@ in {
   # For host configuration we need to create copy of the files, so the host system can see them
   home.activation.createHostConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
     files="
+      $HOME/.config/foot/foot.ini
       $HOME/.config/sway/config
       $HOME/.config/waybar/config
       $HOME/.config/waybar/style.css
@@ -137,6 +151,7 @@ in {
 
     desktop_entries="
       1password
+      discord
       slack
     "
 
@@ -231,7 +246,8 @@ in {
       glab = "run-op plugin run -- glab";
 
       # redhat
-      kinit-rh = "op read \"op://redhat/Red\\ Hat\\ Kerberos/password\" | kinit $(op read \"op://redhat/Red\\ Hat\\ Kerberos/kinit_username\")";
+      rh-kinit = "op read \"op://redhat/Red\\ Hat\\ Kerberos/password\" | kinit $(op read \"op://redhat/Red\\ Hat\\ Kerberos/kinit_username\")";
+      oc-login-osd = "oc login --server=https://api.cyborg.fio9.p1.openshiftapps.com:6443 --token=$(ocp-sso-token https://api.cyborg.fio9.p1.openshiftapps.com:6443)";
     };
   };
 
@@ -247,23 +263,24 @@ in {
   # Firefox
   programs.firefox = {
     enable = true;
+    # NOTE: does not support well with pkgs.emptyDirectory
     package = null;
 
     profiles = {
       thrix = {
         id = 0;
         search = {
-          default = "Google";
+          default = "google";
           force = true;
         };
         settings = {
-          "browser.startup.homepage" = "https://google.com";
-          "browser.search.region" = "CZ";
-          "browser.search.isUS" = false;
-          "distribution.searchplugins.defaultLocale" = "en-US";
-          "general.useragent.locale" = "en-US";
-          "browser.bookmarks.showMobileBookmarks" = true;
-          "browser.newtabpage.pinned" = [
+          browser.startup.homepage = "https://google.com";
+          browser.search.region = "CZ";
+          browser.search.isUS = false;
+          distribution.searchplugins.defaultLocale = "en-US";
+          general.useragent.locale = "en-US";
+          browser.bookmarks.showMobileBookmarks = true;
+          browser.newtabpage.pinned = [
             {
               title = "Google";
               url = "https://google.com";
@@ -282,6 +299,25 @@ in {
             id = 1;
           };
         };
+      };
+    };
+  };
+
+  programs.foot = {
+    enable = true;
+    package = pkgs.emptyDirectory;
+    settings = {
+      main = {
+        term = "xterm-256color";
+        font = "monospace:size=12";
+      };
+
+      scrollback = {
+        lines = terminalHistoryLimit;
+      };
+
+      url = {
+        osc8-underline = "always";
       };
     };
   };
@@ -367,11 +403,46 @@ in {
   programs.nixvim = {
     enable = true;
 
+    globals = {
+      mapleader = " ";
+    };
+
     opts = {
       expandtab = true;
       relativenumber = true;
       shiftwidth = 2;
       mouse = "";
+    };
+
+    # Configure diagnostics
+    diagnostic.settings = {
+      virtual_text = {
+        enable = true;
+        spacing = 2;
+        prefix = "●";
+      };
+
+      underline = true;
+      update_in_insert = true;
+
+      signs = {
+        enable = true;
+        config = {
+          Error = {text = "✘";};
+          Warn = {text = "▲";};
+          Info = {text = "";};
+          Hint = {text = "⚑";};
+        };
+      };
+    };
+
+    # Colorscheme
+    colorschemes.tokyonight = {
+      enable = true;
+
+      settings = {
+        style = "night";
+      };
     };
 
     plugins = import ./nixvim/plugins.nix;
@@ -396,6 +467,18 @@ in {
 
   # Starship
   programs.starship.enable = true;
+
+  # Tmux
+  programs.tmux = {
+    enable = true;
+    clock24 = true;
+    historyLimit = terminalHistoryLimit;
+    shortcut = "a";
+    terminal = terminalType;
+    extraConfig = ''
+      set -g default-terminal "tmux-256color"
+    '';
+  };
 
   # Waybar
   programs.waybar = {
@@ -443,6 +526,13 @@ in {
         icon = "dropbox";
         categories = ["Network" "FileTransfer"];
       };
+      discord = {
+        name = "Discord";
+        type = "Application";
+        exec = "toolbox run --container nix discord %U";
+        icon = "discord";
+        categories = ["Network" "InstantMessaging"];
+      };
       "firefox" = {
         name = "Firefox";
         type = "Application";
@@ -467,6 +557,7 @@ in {
         "x-scheme-handler/slack" = "slack.desktop";
         "x-directory/normal" = "org.gnome.Nautilus.desktop";
         "inode/directory" = "org.gnome.Nautilus.desktop";
+        "application/x-windsurf" = "windsurf.desktop";
       };
     };
   };

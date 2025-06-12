@@ -1,6 +1,16 @@
 {
   airline.enable = true;
 
+  cmp = {
+    enable = true;
+  };
+
+  cmp-buffer.enable = true;
+  cmp-nvim-lsp.enable = true;
+  cmp-nvim-lua.enable = true;
+  cmp-path.enable = true;
+  luasnip.enable = true;
+
   efmls-configs = {
     enable = true;
 
@@ -42,6 +52,8 @@
       };
     };
   };
+
+  lspsaga.enable = true;
 
   mini = {
     enable = true;
