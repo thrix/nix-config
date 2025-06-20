@@ -10,6 +10,7 @@
     alejandra
     asdf-vm
     bats
+    claude-code
     cloud-nuke
     deadnix
     dgoss
@@ -21,13 +22,14 @@
     goss
     htop
     httpie
+    ibmcloud-cli
+    iosevka
     jira-cli-go
     jq
     just
     kubectl
     kubevirt
-    ibmcloud-cli
-    iosevka
+    nomad
     openshift
     packer
     pre-commit
@@ -62,10 +64,13 @@ in {
     builtins.elem (lib.getName pkg) [
       "1password"
       "1password-cli"
+      "claude-code"
       "discord"
       "dropbox"
       "firefox-bin"
+      "firefox-bin-unwrapped"
       "firefox-release-bin-unwrapped"
+      "nomad"
       "packer"
       "slack"
       "vault-bin"
@@ -217,6 +222,18 @@ in {
            # set foot title
            foot-title() {
       echo -ne "\\033]0;$1\\007"
+           }
+
+           # set foot white theme
+           foot-white() {
+      # White background
+      printf '\e]11;#ffffff\a'
+
+      # Dark gray foreground (text)
+      printf '\e]10;#2e2e2e\a'
+
+      # Blue cursor for visibility
+      printf '\e]12;#005f87\a'
            }
 
            # resolve issues with dbus activation environment
