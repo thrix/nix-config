@@ -2,6 +2,8 @@
   # config,
   lib,
   pkgs,
+  username,
+  homeDirectory,
   ...
 }: let
   nixPackages = with pkgs; [
@@ -52,9 +54,10 @@
   # shared settings across various programs
   terminalType = "screen-256color";
   terminalHistoryLimit = 100000;
+
 in {
-  home.username = "thrix";
-  home.homeDirectory = "/home/thrix";
+  home.username = username;
+  home.homeDirectory = homeDirectory;
 
   home.stateVersion = "23.11";
 
@@ -114,9 +117,9 @@ in {
       $HOME/.config/waybar/style.css
       $HOME/.local/share/applications/mimeapps.list
       $HOME/.mozilla/firefox/profiles.ini
-      $HOME/.mozilla/firefox/thrix/containers.json
-      $HOME/.mozilla/firefox/thrix/search.json.mozlz4
-      $HOME/.mozilla/firefox/thrix/user.js
+      $HOME/.mozilla/firefox/${username}/containers.json
+      $HOME/.mozilla/firefox/${username}/search.json.mozlz4
+      $HOME/.mozilla/firefox/${username}/user.js
     "
 
     for file in $files; do
@@ -135,9 +138,9 @@ in {
       $HOME/.config/waybar/style.css
       $HOME/.local/share/applications/mimeapps.list
       $HOME/.mozilla/firefox/profiles.ini
-      $HOME/.mozilla/firefox/thrix/containers.json
-      $HOME/.mozilla/firefox/thrix/search.json.mozlz4
-      $HOME/.mozilla/firefox/thrix/user.js
+      $HOME/.mozilla/firefox/${username}/containers.json
+      $HOME/.mozilla/firefox/${username}/search.json.mozlz4
+      $HOME/.mozilla/firefox/${username}/user.js
     "
 
     for file in $files; do

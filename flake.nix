@@ -34,6 +34,25 @@
         nixvim.homeManagerModules.nixvim
         ./home.nix
       ];
+
+      extraSpecialArgs = {
+        username = "thrix";
+        homeDirectory = "/home/thrix";
+      };
+    };
+
+    homeConfigurations."mvadkert" = home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+
+      modules = [
+        nixvim.homeManagerModules.nixvim
+        ./home.nix
+      ];
+
+      extraSpecialArgs = {
+        username = "mvadkert";
+        homeDirectory = "/home/mvadkert";
+      };
     };
   };
 }
