@@ -19,6 +19,7 @@
     discord
     dnsutils
     dropbox
+    google-cloud-sdk
     glab
     gnumake
     goss
@@ -34,19 +35,20 @@
     nomad
     openshift
     packer
-    pre-commit
     ruby
     shellcheck
     shfmt
     silver-searcher
-    slack
+    # slack
     stern
+    toolhive
     vault-bin
     yamllint
     yq-go
+    winboat
   ];
 
-  customPkgs = import ./pkgs/custom.nix {inherit pkgs;};
+  customPkgs = import ./pkgs/custom.nix {inherit pkgs username;};
   customPackages = with customPkgs; [
     fedoraHost
   ];
@@ -54,7 +56,6 @@
   # shared settings across various programs
   terminalType = "screen-256color";
   terminalHistoryLimit = 100000;
-
 in {
   home.username = username;
   home.homeDirectory = homeDirectory;
@@ -96,8 +97,6 @@ in {
     # Testing Farm
     PYTHON_KEYRING_BACKEND = "keyring.backends.null.Keyring";
 
-    HELLO = "meho";
-
     # tmt
     TMT_WORKDIR_ROOT = "$HOME/.local/share/tmt";
 
@@ -106,6 +105,9 @@ in {
 
     # dgoss
     CONTAINER_RUNTIME = "podman";
+
+    # testing-farm CLI
+    TESTING_FARM_PUBLIC_IP_RESOLVE_TRIES = 10;
   };
 
   # Restore host specific configuration links, before checking link targets
@@ -157,10 +159,10 @@ in {
         chmod 644 "$file"
     done
 
+    # NOTE: slack disabled
     desktop_entries="
       1password
       discord
-      slack
     "
 
     for entry in $desktop_entries; do
@@ -268,6 +270,7 @@ in {
       # redhat
       rh-kinit = "op read \"op://redhat/Red\\ Hat\\ Kerberos/password\" | kinit $(op read \"op://redhat/Red\\ Hat\\ Kerberos/kinit_username\")";
       oc-login-osd = "oc login --server=https://api.cyborg.fio9.p1.openshiftapps.com:6443 --token=$(ocp-sso-token https://api.cyborg.fio9.p1.openshiftapps.com:6443)";
+      oc-login-mp = "oc login --server https://api.mpp-e1-prod.9e4s.p1.openshiftapps.com:6443 --token=$(ocp-sso-token https://api.mpp-e1-prod.9e4s.p1.openshiftapps.com:6443)";
     };
   };
 
@@ -359,48 +362,47 @@ in {
   programs.git = {
     enable = true;
 
-    aliases = {
-      c = "commit";
-      cf = "commit -m fixup";
-      caf = "commit -a -m fixup";
-      cam = "commit --amend -vs";
+    settings = {
+      alias = {
+        c = "commit";
+        cf = "commit -m fixup";
+        caf = "commit -a -m fixup";
+        cam = "commit --amend -vs";
 
-      p = "push";
-      pf = "push --force";
-      pm = "push -o merge_request.create";
-      pmd = "push -o merge_request.create -o merge_request.draft";
-      pms = "push -o merge_request.create -o merge_request.target=staging";
-      pr = "pull --rebase --autostash";
+        p = "push";
+        pf = "push --force";
+        pm = "push -o merge_request.create";
+        pmd = "push -o merge_request.create -o merge_request.draft";
+        pms = "push -o merge_request.create -o merge_request.target=staging";
+        pr = "pull --rebase --autostash";
 
-      r = "rebase";
-      ri2 = "git rebase -i HEAD~2";
-      ri3 = "git rebase -i HEAD~3";
-      ri4 = "git rebase -i HEAD~4";
-      ri5 = "git rebase -i HEAD~5";
-      ri6 = "git rebase -i HEAD~6";
-    };
+        r = "rebase";
+        ri2 = "git rebase -i HEAD~2";
+        ri3 = "git rebase -i HEAD~3";
+        ri4 = "git rebase -i HEAD~4";
+        ri5 = "git rebase -i HEAD~5";
+        ri6 = "git rebase -i HEAD~6";
+      };
 
-    delta = {
-      # 2024-08-18 - disabled due to https://github.com/NixOS/nixpkgs/issues/332957, does not compile
-      # enable = true;
+      user = {
+        name = "Miroslav Vadkerti";
+        email = "mvadkert@redhat.com";
+      };
 
-      options = {
-        line-numbers = true;
-        side-by-side = true;
+      init = {
+        defaultBranch = "main";
+      };
+
+      push = {
+        autoSetupRemote = "true";
       };
     };
+  };
 
-    difftastic = {
-      enable = true;
-    };
-
-    extraConfig = {
-      init.defaultBranch = "main";
-      push.autoSetupRemote = "true";
-    };
-
-    userName = "Miroslav Vadkerti";
-    userEmail = "mvadkert@redhat.com";
+  # Git Diffstatic
+  programs.difftastic = {
+    enable = true;
+    git.enable = true;
   };
 
   # Git Cliff
@@ -465,7 +467,17 @@ in {
       };
     };
 
+    # Plugins
     plugins = import ./nixvim/plugins.nix;
+
+    # Extra config
+    extraConfigLua = ''
+      vim.filetype.add({
+        extension = {
+          fmf = "yaml",
+        },
+      })
+    '';
   };
 
   # SSH
@@ -553,20 +565,13 @@ in {
         icon = "discord";
         categories = ["Network" "InstantMessaging"];
       };
-      "firefox" = {
-        name = "Firefox";
-        type = "Application";
-        exec = "flatpak-spawn --host firefox %U";
-        icon = "firefox";
-        categories = ["Application" "Network" "WebBrowser"];
-      };
-      slack = {
-        name = "Slack";
-        type = "Application";
-        exec = "toolbox run --container nix slack %U";
-        icon = "slack";
-        categories = ["Network" "InstantMessaging"];
-      };
+      # slack = {
+      #   name = "Slack";
+      #   type = "Application";
+      #   exec = "toolbox run --container nix slack %U";
+      #   icon = "slack";
+      #   categories = ["Network" "InstantMessaging"];
+      # };
     };
     mimeApps = {
       enable = true;
@@ -574,7 +579,7 @@ in {
         "text/html" = "google-chrome.desktop";
         "x-scheme-handler/http" = "google-chrome.desktop";
         "x-scheme-handler/https" = "google-chrome.desktop";
-        "x-scheme-handler/slack" = "slack.desktop";
+        # "x-scheme-handler/slack" = "slack.desktop";
         "x-directory/normal" = "org.gnome.Nautilus.desktop";
         "inode/directory" = "org.gnome.Nautilus.desktop";
         "application/x-windsurf" = "windsurf.desktop";

@@ -31,7 +31,7 @@
       inherit pkgs;
 
       modules = [
-        nixvim.homeManagerModules.nixvim
+        nixvim.homeModules.nixvim
         ./home.nix
       ];
 
@@ -45,7 +45,7 @@
       inherit pkgs;
 
       modules = [
-        nixvim.homeManagerModules.nixvim
+        nixvim.homeModules.nixvim
         ./home.nix
       ];
 

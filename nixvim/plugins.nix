@@ -32,10 +32,16 @@
 
     servers = {
       ansiblels = {
+        package = null;
         enable = true;
       };
 
       bashls = {
+        enable = true;
+      };
+
+      jinja_lsp = {
+        package = null;
         enable = true;
       };
 
