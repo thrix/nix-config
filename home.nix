@@ -14,6 +14,7 @@
     bats
     claude-code
     cloud-nuke
+    cosign
     deadnix
     dgoss
     discord

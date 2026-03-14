@@ -76,7 +76,7 @@
 
             cat <<EOF > $out/bin/testing-farm-staging-public
       #!/bin/bash
-      TESTING_FARM_API_URL=http://api.staging.testing-farm.io/v0.1 \
+      TESTING_FARM_API_URL=https://api.staging.testing-farm.io/v0.1 \
       TESTING_FARM_API_TOKEN=\$(sg onepassword-cli -c "op read op://testing-farm/ccyqkqhkeqalbxnuhgft4lli2y/notesPlain") \
       testing-farm "\$@"
       EOF
