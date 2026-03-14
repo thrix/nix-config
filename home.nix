@@ -111,71 +111,21 @@ in {
     TESTING_FARM_PUBLIC_IP_RESOLVE_TRIES = 10;
   };
 
-  # Restore host specific configuration links, before checking link targets
-  home.activation.restoreNixLinks = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
-    files="
-      $HOME/.config/foot/foot.ini
-      $HOME/.config/sway/config
-      $HOME/.config/waybar/config
-      $HOME/.config/waybar/style.css
-      $HOME/.local/share/applications/mimeapps.list
-      $HOME/.mozilla/firefox/profiles.ini
-      $HOME/.mozilla/firefox/${username}/containers.json
-      $HOME/.mozilla/firefox/${username}/search.json.mozlz4
-      $HOME/.mozilla/firefox/${username}/user.js
-    "
-
-    for file in $files; do
-        [ ! -L "$file".lnk ] && continue
-        echo -e "\e[32mRestoring link '$file' from '$file.lnk'\e[0m"
-        mv "$file".lnk "$file"
-    done
-  '';
-
-  # For host configuration we need to create copy of the files, so the host system can see them
-  home.activation.createHostConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
-    files="
-      $HOME/.config/foot/foot.ini
-      $HOME/.config/sway/config
-      $HOME/.config/waybar/config
-      $HOME/.config/waybar/style.css
-      $HOME/.local/share/applications/mimeapps.list
-      $HOME/.mozilla/firefox/profiles.ini
-      $HOME/.mozilla/firefox/${username}/containers.json
-      $HOME/.mozilla/firefox/${username}/search.json.mozlz4
-      $HOME/.mozilla/firefox/${username}/user.js
-    "
-
-    for file in $files; do
-        # Ignore if the file is an ordinary file, home-manager will replace it if needed
-        [ ! -L "$file" ] && continue
-
-        # Create copy of the symlinked file
-        echo -e "\e[32mStoring link '$file.lnk'\e[0m"
-        target=$(readlink -f "$file")
-        mv "$file" "$file".lnk
-
-        echo -e "\e[32mCopying '$target' to '$file'\e[0m"
-        cp "$target" "$file"
-        chmod 644 "$file"
-    done
-
-    # NOTE: slack disabled
-    desktop_entries="
-      1password
-      discord
-    "
-
-    for entry in $desktop_entries; do
-      src="$HOME/.nix-profile/share/applications/$entry.desktop"
-
-      # do not break if the file does not yet exist
-      test -e $src || continue
-
-      echo -e "\e[32mCreating desktop entry '$entry.desktop'\e[0m"
-      cp -f $src $HOME/.local/share/applications
-    done
-  '';
+  hostConfig = {
+    enable = true;
+    xdgDesktopEntries = true;
+    files = [
+      ".config/foot/foot.ini"
+      ".config/sway/config"
+      ".config/waybar/config"
+      ".config/waybar/style.css"
+      ".local/share/applications/mimeapps.list"
+      ".mozilla/firefox/profiles.ini"
+      ".mozilla/firefox/${username}/containers.json"
+      ".mozilla/firefox/${username}/search.json.mozlz4"
+      ".mozilla/firefox/${username}/user.js"
+    ];
+  };
 
   # For various final configurations
   home.activation.toolboxSetup = lib.hm.dag.entryAfter ["reloadSystemd"] ''

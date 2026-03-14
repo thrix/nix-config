@@ -15,6 +15,17 @@ Usage:
 
 endef
 
+##@ Check
+
+check/nix:  ## Build Nix config for all users without creating result links
+	nix build .#homeConfigurations.thrix.activationPackage --no-link
+	nix build .#homeConfigurations.mvadkert.activationPackage --no-link
+
+check/bats:  ## Run bats unit tests
+	bats tests/
+
+check: check/nix check/bats  ## Run all checks
+
 ##@ Home Manager
 
 switch:  ## Run home-manager switch

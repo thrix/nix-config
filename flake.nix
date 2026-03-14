@@ -27,11 +27,16 @@
   in {
     formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.alejandra;
 
+    homeManagerModules = {
+      hostConfig = import ./modules/host-config.nix;
+    };
+
     homeConfigurations."thrix" = home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
 
       modules = [
         nixvim.homeModules.nixvim
+        ./modules/host-config.nix
         ./home.nix
       ];
 
@@ -46,6 +51,7 @@
 
       modules = [
         nixvim.homeModules.nixvim
+        ./modules/host-config.nix
         ./home.nix
       ];
 
