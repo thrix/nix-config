@@ -34,6 +34,7 @@
     kubectl
     kubevirt
     nomad
+    opencode
     openshift
     packer
     ruby
@@ -222,6 +223,7 @@ in {
       rh-kinit = "op read \"op://redhat/Red\\ Hat\\ Kerberos/password\" | kinit $(op read \"op://redhat/Red\\ Hat\\ Kerberos/kinit_username\")";
       oc-login-osd = "oc login --server=https://api.cyborg.fio9.p1.openshiftapps.com:6443 --token=$(ocp-sso-token https://api.cyborg.fio9.p1.openshiftapps.com:6443)";
       oc-login-mp = "oc login --server https://api.mpp-e1-prod.9e4s.p1.openshiftapps.com:6443 --token=$(ocp-sso-token https://api.mpp-e1-prod.9e4s.p1.openshiftapps.com:6443)";
+      oc-login-itup = "oc login --server https://api.prod-scale-spoke1-aws-us-east-1.prod-scale-mgmthub1-aws-us-east-1.itup.redhat.com:443 --token=$(ocp-sso-token https://api.prod-scale-spoke1-aws-us-east-1.prod-scale-mgmthub1-aws-us-east-1.itup.redhat.com:443)";
     };
   };
 
