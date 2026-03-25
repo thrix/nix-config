@@ -423,6 +423,9 @@ in {
     # Plugins
     plugins = import ./nixvim/plugins.nix;
 
+    # Extra plugins not managed by nixvim modules
+    extraPlugins = [pkgs.vimPlugins.plenary-nvim];
+
     # Extra config
     extraConfigLua = ''
       vim.filetype.add({
