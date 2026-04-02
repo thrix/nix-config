@@ -295,6 +295,10 @@ in {
       url = {
         osc8-underline = "always";
       };
+
+      key-bindings = {
+        show-urls-copy = "Control+Shift+y";
+      };
     };
   };
 
