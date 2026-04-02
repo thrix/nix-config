@@ -116,6 +116,16 @@ in {
     TESTING_FARM_WATCH_TICK = 3;
   };
 
+  dnf = {
+    enable = true;
+    install = [
+    ];
+    # releaseInstall = {
+    #   "41" = ["some-f41-item"];
+    # };
+    # upgradeAll = false;
+  };
+
   hostConfig = {
     enable = true;
     xdgDesktopEntries = true;
