@@ -14,6 +14,7 @@
     bats
     claude-code
     cloud-nuke
+    codex
     cosign
     deadnix
     dgoss
@@ -388,6 +389,8 @@ in {
 
     opts = {
       expandtab = true;
+      list = true;
+      listchars = "tab:› ,space:·,leadmultispace:· ,trail:·,precedes:«,extends:»,eol:¬";
       relativenumber = true;
       shiftwidth = 2;
       mouse = "";
