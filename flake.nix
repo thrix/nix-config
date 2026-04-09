@@ -42,6 +42,7 @@
     formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.alejandra;
 
     homeManagerModules = {
+      dnf = import ./modules/dnf.nix;
       hostConfig = import ./modules/host-config.nix;
     };
 
@@ -50,6 +51,7 @@
 
       modules = [
         nixvim.homeModules.nixvim
+        ./modules/dnf.nix
         ./modules/host-config.nix
         ./home.nix
       ];
@@ -65,6 +67,7 @@
 
       modules = [
         nixvim.homeModules.nixvim
+        ./modules/dnf.nix
         ./modules/host-config.nix
         ./home.nix
       ];

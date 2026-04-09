@@ -113,6 +113,16 @@ in {
     TESTING_FARM_PUBLIC_IP_RESOLVE_TRIES = 10;
   };
 
+  dnf = {
+    enable = true;
+    install = [
+    ];
+    # releaseInstall = {
+    #   "41" = ["some-f41-item"];
+    # };
+    # upgradeAll = false;
+  };
+
   hostConfig = {
     enable = true;
     xdgDesktopEntries = true;
