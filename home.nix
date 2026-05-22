@@ -38,6 +38,7 @@
     opencode
     openshift
     packer
+    rclone
     ruby
     shellcheck
     shfmt
@@ -111,6 +112,8 @@ in {
 
     # testing-farm CLI
     TESTING_FARM_PUBLIC_IP_RESOLVE_TRIES = 10;
+    # Tighter watch tick makes `testing-farm watch` feel responsive.
+    TESTING_FARM_WATCH_TICK = 3;
   };
 
   hostConfig = {
@@ -242,9 +245,14 @@ in {
     enable = true;
     # NOTE: does not support well with pkgs.emptyDirectory
     package = null;
+    configPath = ".mozilla/firefox";
 
     profiles = {
-      thrix = {
+      default = {
+        # Keep the generated profile path aligned with hostConfig.files and
+        # the Silverblue host Firefox instance.
+        name = username;
+        path = username;
         id = 0;
         search = {
           default = "google";
@@ -354,6 +362,8 @@ in {
       push = {
         autoSetupRemote = "true";
       };
+
+      signing.format = "openpgp";
     };
   };
 

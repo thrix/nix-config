@@ -79,5 +79,10 @@ in {
       command = "dbus-update-activation-environment --systemd --all";
       always = true;
     }
+    {
+      # https://github.com/swaywm/sway/wiki#systemd-and-dbus-activation-environments
+      command = "blueman-applet";
+      always = true;
+    }
   ];
 }
