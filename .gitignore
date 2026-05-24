@@ -1,0 +1,3 @@
+# Keep the private module out of normal Git operations. It is added to the index
+# with `git add -N` so flakes can see it, then marked `skip-worktree`.
+home-private.nix

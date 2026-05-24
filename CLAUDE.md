@@ -30,10 +30,11 @@ make install/pre-commit
 
 - **`flake.nix`** — defines two `homeConfigurations` (`thrix` and `mvadkert`), both using `home.nix` with different `username`/`homeDirectory` args. Uses nixpkgs-unstable, home-manager, and nixvim inputs.
 - **`home.nix`** — the main Home Manager module. Configures all programs, packages, environment variables, and activation scripts.
+- **`home-private.nix`** — optional local attrset for private hostnames, IPs, ports, and internal endpoints. It is intentionally not committed, but is made visible to the flake via the Git index and can be consumed from multiple public modules.
 
 ### Key Modules
 
-- **`pkgs/custom.nix`** — a single custom derivation `fedoraHost` that creates wrapper scripts for host-side binaries (podman, swaymsg, firefox, etc.) and token-injecting wrappers for Testing Farm CLI and Artemis CLI variants using 1Password secrets.
+- **`pkgs/custom.nix`** — a single custom derivation `fedoraHost` that creates wrapper scripts for host-side binaries (podman, swaymsg, firefox, etc.). Private endpoint data may be supplied from `home-private.nix` when needed.
 - **`nixvim/plugins.nix`** — NixVim plugin configuration (LSP servers, treesitter, telescope, cmp, efmls). LSP servers `ansiblels` and `jinja_lsp` use `package = null` (expected to come from the host/toolbox).
 - **`waybar/settings.nix`** and **`waybar/style.nix`** — Waybar bar configuration and CSS.
 - **`sway/config.nix`** — Sway window manager configuration.
@@ -60,3 +61,9 @@ Configured in `.pre-commit-config.yaml`:
 ## Nix Formatting
 
 Use `alejandra` for formatting (not `nixfmt`). It is available as both a flake formatter (`nix fmt`) and a pre-commit hook.
+
+## Code Comments
+
+This repo prefers short comments for non-obvious or workaround-heavy solutions. If a
+change relies on surprising Nix, Home Manager, Git, toolbox, or host-integration
+behavior, explain the reason close to the code instead of leaving the intent implicit.
