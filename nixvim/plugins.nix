@@ -14,7 +14,7 @@
   efmls-configs = {
     enable = true;
 
-    setup = {
+    languages = {
       go = {
         formatter = "gofmt";
         linter = "go_revive";

@@ -39,6 +39,13 @@
       /usr/bin/flatpak-spawn --host podman "\$@"
       EOF
 
+            cat <<'EOF' > $out/bin/run-op
+      #!/bin/bash
+      cmd=(op "$@")
+      printf -v quoted_cmd ' %q' "''${cmd[@]}"
+      exec sg onepassword-cli -c "exec$quoted_cmd"
+      EOF
+
             cat <<EOF > $out/bin/rpm-ostree
       #!/bin/bash
       /usr/bin/flatpak-spawn --host rpm-ostree "\$@"
@@ -107,7 +114,7 @@
       #!/bin/bash
       export CLAUDE_CODE_USE_SANDBOX=1
       export CLAUDE_CODE_USE_VERTEX=1
-      export CLOUD_ML_REGION=us-east5
+      export CLOUD_ML_REGION=global
       export ANTHROPIC_VERTEX_PROJECT_ID=itpc-gcp-core-pe-eng-claude
       claude "\$@"
       EOF
@@ -139,7 +146,7 @@
 
             cat <<EOF > $out/bin/tft-admin
       #!/bin/bash
-      poetry -C \$HOME/git/gitlab.cee/baseos-qe/ansible-baseos-ci/cli run tft-admin "\$@"
+      poetry -C "\$HOME/git/gitlab.cee/baseos-qe/ansible-baseos-ci/cli" run tft-admin "\$@"
       EOF
 
             chmod +x $out/bin/*
