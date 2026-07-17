@@ -29,17 +29,21 @@
     jira-cli-go
     jq
     just
+    keybase
     kubectl
     kubevirt
     nomad
+    nono
     opencode
     openshift
     packer
     rclone
+    rtk
     ruby
+    saml2aws
     shellcheck
     shfmt
-    silver-searcher
+    silver-searcher-ng
     stern
     toolhive
     vault-bin
@@ -132,6 +136,9 @@ in {
     TESTING_FARM_PUBLIC_IP_RESOLVE_TRIES = 10;
     # Tighter watch tick makes `testing-farm watch` feel responsive.
     TESTING_FARM_WATCH_TICK = 3;
+
+    # Prefix command with a space to ignore it in history
+    HISTCONTROL = "ignoreboth";
   };
 
   vault = {
