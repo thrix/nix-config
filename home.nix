@@ -527,6 +527,24 @@ in {
   xdg = {
     enable = true;
     desktopEntries = {
+      # Chrome lives on the Fedora host, but the sway session (and its
+      # launchers) run inside the nix-toolbox container. Exec calls the
+      # fedoraHost `google-chrome` wrapper, which delegates to the host via
+      # flatpak-spawn (same pattern as the firefox wrapper). Keeping Exec a
+      # plain command (no shell metacharacters) satisfies desktop-file-validate,
+      # and the first word `google-chrome` resolves both in the container (the
+      # wrapper) and on the host (/usr/bin/google-chrome), so
+      # `xdg-settings set default-web-browser google-chrome.desktop` no longer
+      # fails validation from either side.
+      "google-chrome" = {
+        name = "Google Chrome";
+        genericName = "Web Browser";
+        type = "Application";
+        exec = "google-chrome %U";
+        icon = "google-chrome";
+        categories = ["Network" "WebBrowser"];
+        mimeType = ["text/html" "x-scheme-handler/http" "x-scheme-handler/https"];
+      };
       "1password" = {
         name = "1Password";
         type = "Application";

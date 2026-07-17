@@ -29,6 +29,11 @@
       /usr/bin/flatpak-spawn --env=DISPLAY=:0 --host firefox "\$@"
       EOF
 
+            cat <<EOF > $out/bin/google-chrome
+      #!/bin/bash
+      /usr/bin/flatpak-spawn --env=DISPLAY=:0 --host google-chrome "\$@"
+      EOF
+
             cat <<EOF > $out/bin/flatpak
       #!/bin/bash
       /usr/bin/flatpak-spawn --host flatpak "\$@"
