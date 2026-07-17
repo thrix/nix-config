@@ -1,0 +1,47 @@
+{
+  # Extra dnf packages that need the private repos/copr below.
+  dnfInstall = [
+    "some-internal-pkg"
+  ];
+
+  # Raw yum .repo files; attr name becomes <name>.repo in /etc/yum.repos.d.
+  dnfRepos = {
+    my-repo = ''
+      [my-repo]
+      name=My internal repo
+      baseurl=https://repo.internal.example.com/fedora-$releasever/
+      enabled=1
+      gpgcheck=0
+    '';
+  };
+
+  # Copr repos enabled via `dnf copr enable` (hub is optional, for non-default
+  # instances such as an internal Copr).
+  dnfCopr = [
+    {
+      project = "owner/project";
+      hub = "copr.internal.example.com";
+    }
+  ];
+
+  ocServers = {
+    prod = "https://api.internal.example.com:6443";
+  };
+
+  sshMatchBlocks = {
+    "internal-host" = {
+      hostname = "10.0.0.10";
+      user = "alice";
+    };
+
+    "legacy-mail" = {
+      hostname = "mail.example.com";
+      user = "alice";
+      port = 6929;
+      extraOptions = {
+        HostKeyAlgorithms = "+ssh-rsa";
+        PubkeyAcceptedAlgorithms = "+ssh-rsa";
+      };
+    };
+  };
+}

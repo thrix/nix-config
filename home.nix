@@ -70,6 +70,14 @@
   # shared settings across various programs
   terminalType = "screen-256color";
   terminalHistoryLimit = 100000;
+
+  # Optional private config (RH-internal dnf repos/copr/packages, hostnames…).
+  # Made visible to the flake by staging it in the Git index; flakes ignore
+  # untracked files, so an absent file falls back to an empty attrset.
+  private =
+    if builtins.pathExists ./home-private.nix
+    then import ./home-private.nix
+    else {};
 in {
   home.username = username;
   home.homeDirectory = homeDirectory;
@@ -218,8 +226,117 @@ in {
 
   dnf = {
     enable = true;
-    install = [
-    ];
+    # Packages from public Fedora repos. RH-internal repos, the qa-tools Copr,
+    # and packages that need them live in home-private.nix (merged below).
+    install =
+      [
+        # toolchain / build deps
+        "autoconf"
+        "automake"
+        "clang"
+        "expect"
+        "gcc"
+        "git"
+        "golang"
+        "inotify-tools"
+        "krb5-devel"
+        "libcurl-devel"
+        "libffi-devel"
+        "libpq-devel"
+        "libtool"
+        "libvirt-devel"
+        "libxml2-devel"
+        "libxslt-devel"
+        "nodejs-npm"
+        "openssl-devel"
+        "popt-devel"
+        "python3"
+        "python3-devel"
+        "python3.9"
+        "python3-libselinux"
+        "python3-rpm"
+        "redhat-rpm-config"
+        "rpm-build"
+
+        # CLI tools / utilities
+        "bind-utils"
+        "bootc"
+        "btop"
+        "codespell"
+        "copyq"
+        "diskus"
+        "direnv"
+        "eza"
+        "gcal"
+        "git-lfs"
+        "gum"
+        "hugo"
+        "ImageMagick"
+        "jq"
+        "ncdu"
+        "openldap-clients"
+        "parallel"
+        "pipx"
+        "poppler-utils"
+        "postgresql"
+        "sqlite"
+        "tig"
+        "trivy"
+        "valkey"
+        "xxd"
+
+        # containers / virtualization
+        "buildah"
+        "gitleaks"
+        "helm"
+        "libvirt"
+        "podman"
+        "podman-docker"
+        "skopeo"
+        "virt-manager"
+        "virt-viewer"
+        "wine"
+        "winetricks"
+
+        # python libraries
+        "python3-boto3"
+        "python3-botocore"
+        "python3-fedora-distro-aliases"
+        "python3-hvac"
+        "python3-jinja2-cli"
+        "python3-nitrate"
+        "python3-openstacksdk"
+
+        # ansible / testing
+        "ansible"
+        "ansible-core"
+        "beakerlib"
+        "hatch"
+        "pre-commit"
+        "python3-hatch-vcs"
+        "rubygem-asciidoctor"
+        "standard-test-roles"
+        "tmt+provision-virtual"
+        "tox"
+
+        # Fedora/RHEL packaging & cloud tooling
+        "awscli2"
+        "bodhi-client"
+        "centpkg"
+        "koji"
+        "krb5-workstation"
+
+        # java
+        "java-latest-openjdk-devel"
+      ]
+      ++ (private.dnfInstall or []);
+
+    # RH-internal yum repos (e.g. beaker) — defined in home-private.nix.
+    repos = private.dnfRepos or {};
+
+    # Copr repositories (e.g. the internal qa-tools hub) — from home-private.nix.
+    copr = private.dnfCopr or [];
+
     # releaseInstall = {
     #   "41" = ["some-f41-item"];
     # };
