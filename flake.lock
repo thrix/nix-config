@@ -57,6 +57,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-claude": {
+      "locked": {
+        "lastModified": 1781034373,
+        "narHash": "sha256-7P/e4EoMT83YsmvBw5PV1Z6QyDFRpeaSw9/rlTGnORE=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "19c1fe4ff9335a9db73772c633e13ac4c7e1897a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "19c1fe4ff9335a9db73772c633e13ac4c7e1897a",
+        "type": "github"
+      }
+    },
     "nixpkgs-winboat": {
       "locked": {
         "lastModified": 1772771118,
@@ -99,6 +115,7 @@
       "inputs": {
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-claude": "nixpkgs-claude",
         "nixpkgs-winboat": "nixpkgs-winboat",
         "nixvim": "nixvim"
       }

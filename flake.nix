@@ -9,6 +9,10 @@
     # https://github.com/NixOS/nixpkgs/issues/503112
     nixpkgs-winboat.url = "github:nixos/nixpkgs/e38213b91d3786389a446dfce4ff5a8aaf6012f2";
 
+    # pinned nixpkgs for claude-code — nixos-unstable lags master; this commit
+    # bumps claude-code to 2.1.170 (Fable 5)
+    nixpkgs-claude.url = "github:nixos/nixpkgs/19c1fe4ff9335a9db73772c633e13ac4c7e1897a";
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -23,6 +27,7 @@
   outputs = {
     nixpkgs,
     nixpkgs-winboat,
+    nixpkgs-claude,
     home-manager,
     nixvim,
     ...
@@ -35,6 +40,14 @@
         # https://github.com/NixOS/nixpkgs/issues/503112
         (_final: _prev: {
           winboat = (import nixpkgs-winboat {inherit system;}).winboat;
+        })
+        # use claude-code from pinned nixpkgs master until nixos-unstable catches up
+        (_final: _prev: {
+          claude-code =
+            (import nixpkgs-claude {
+              inherit system;
+              config.allowUnfree = true;
+            }).claude-code;
         })
       ];
     };
