@@ -1,5 +1,5 @@
 {
-  # config,
+  config,
   lib,
   pkgs,
   username,
@@ -8,7 +8,6 @@
 }: let
   nixPackages = with pkgs; [
     _1password-cli
-    _1password-gui
     alejandra
     asdf-vm
     bats
@@ -18,9 +17,7 @@
     cosign
     deadnix
     dgoss
-    discord
     dnsutils
-    dropbox
     google-cloud-sdk
     glab
     gnumake
@@ -43,19 +40,32 @@
     shellcheck
     shfmt
     silver-searcher
-    # slack
     stern
     toolhive
     vault-bin
     yamllint
     yq-go
-    winboat
   ];
 
   customPkgs = import ./pkgs/custom.nix {inherit pkgs username;};
   customPackages = with customPkgs; [
     fedoraHost
   ];
+
+  # GPU-accelerated GUI apps. On a non-NixOS host their bundled Mesa looks for
+  # drivers under /run/opengl-driver/lib (the NixOS path), which doesn't exist
+  # on Fedora Silverblue / inside the toolbox — so GPU init fails and they fall
+  # back to software rendering. nixGL wraps each binary with a consistent Nix
+  # Mesa stack (mesa/nixGLIntel works for the AMD GPU too).
+  # NOTE: only the bin wrapper is nixGL-aware. The toolbox desktop entries
+  # launch these by bare command name, so the wrapped bin on PATH takes effect.
+  graphicalPackages = map config.lib.nixGL.wrap (with pkgs; [
+    winboat
+    discord
+    _1password-gui
+    dropbox
+    slack
+  ]);
 
   # shared settings across various programs
   terminalType = "screen-256color";
@@ -66,7 +76,7 @@ in {
 
   home.stateVersion = "23.11";
 
-  home.packages = nixPackages ++ customPackages;
+  home.packages = nixPackages ++ customPackages ++ graphicalPackages;
 
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
@@ -663,13 +673,13 @@ in {
         icon = "discord";
         categories = ["Network" "InstantMessaging"];
       };
-      # slack = {
-      #   name = "Slack";
-      #   type = "Application";
-      #   exec = "toolbox run --container nix slack %U";
-      #   icon = "slack";
-      #   categories = ["Network" "InstantMessaging"];
-      # };
+      slack = {
+        name = "Slack";
+        type = "Application";
+        exec = "toolbox run --container nix slack %U";
+        icon = "slack";
+        categories = ["Network" "InstantMessaging"];
+      };
     };
     mimeApps = {
       enable = true;
@@ -677,7 +687,7 @@ in {
         "text/html" = "google-chrome.desktop";
         "x-scheme-handler/http" = "google-chrome.desktop";
         "x-scheme-handler/https" = "google-chrome.desktop";
-        # "x-scheme-handler/slack" = "slack.desktop";
+        "x-scheme-handler/slack" = "slack.desktop";
         "x-directory/normal" = "org.gnome.Nautilus.desktop";
         "inode/directory" = "org.gnome.Nautilus.desktop";
         "application/x-windsurf" = "windsurf.desktop";

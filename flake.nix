@@ -22,6 +22,13 @@
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # nixGL wraps Nix-built graphical apps so they find GPU drivers on a
+    # non-NixOS host (Fedora Silverblue). Used to give winboat hardware accel.
+    nixgl = {
+      url = "github:nix-community/nixGL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -30,6 +37,7 @@
     nixpkgs-claude,
     home-manager,
     nixvim,
+    nixgl,
     ...
   }: let
     system = "x86_64-linux";
@@ -68,6 +76,8 @@
         ./modules/dnf.nix
         ./modules/host-config.nix
         ./modules/vault.nix
+        # Expose nixGL packages so home.nix can wrap GPU apps (winboat).
+        {targets.genericLinux.nixGL.packages = nixgl.packages;}
         ./home.nix
       ];
 
@@ -85,6 +95,8 @@
         ./modules/dnf.nix
         ./modules/host-config.nix
         ./modules/vault.nix
+        # Expose nixGL packages so home.nix can wrap GPU apps (winboat).
+        {targets.genericLinux.nixGL.packages = nixgl.packages;}
         ./home.nix
       ];
 
