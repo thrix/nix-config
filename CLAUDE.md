@@ -34,6 +34,9 @@ make install/pre-commit
 
 ### Key Modules
 
+- **`modules/vault.nix`** — reusable Home Manager module for HashiCorp Vault as a systemd user service. Supports pluggable unseal methods (1password/file/manual) and plugin management. Exported as `homeManagerModules.vault`.
+- **`pkgs/vault-plugin-secrets-github.nix`** — nix derivation for the [vault-plugin-secrets-github](https://github.com/martinbaillie/vault-plugin-secrets-github) binary. Fetches from GitHub releases; used as a Vault plugin for generating short-lived GitHub tokens via a GitHub App.
+- **`pkgs/vault-plugin-secrets-gitlab.nix`** — nix derivation for the [vault-plugin-secrets-gitlab](https://github.com/ilijamt/vault-plugin-secrets-gitlab) binary. Fetches the static binary from GitHub releases (renamed from the versioned tarball name); used as a Vault plugin for generating short-lived GitLab group access tokens for `gitlab.com` (config `com`) and `gitlab.cee.redhat.com` (config `cee`). Configured via the `vault-setup-gitlab` wrapper in `pkgs/custom.nix`.
 - **`pkgs/custom.nix`** — a single custom derivation `fedoraHost` that creates wrapper scripts for host-side binaries (podman, swaymsg, firefox, etc.). Private endpoint data may be supplied from `home-private.nix` when needed.
 - **`nixvim/plugins.nix`** — NixVim plugin configuration (LSP servers, treesitter, telescope, cmp, efmls). LSP servers `ansiblels` and `jinja_lsp` use `package = null` (expected to come from the host/toolbox).
 - **`waybar/settings.nix`** and **`waybar/style.nix`** — Waybar bar configuration and CSS.

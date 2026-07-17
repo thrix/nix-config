@@ -116,6 +116,96 @@ in {
     TESTING_FARM_WATCH_TICK = 3;
   };
 
+  vault = {
+    enable = true;
+    unseal = {
+      method = "1password";
+      onePassword = {
+        unsealKeyRef = "op://redhat/hashicorp-vault/unseal-key";
+        rootTokenRef = "op://redhat/hashicorp-vault/root-token";
+      };
+    };
+    bootstrap.onePassword.vault = "redhat";
+    plugins = [
+      (import ./pkgs/vault-plugin-secrets-github.nix {inherit pkgs;})
+      (import ./pkgs/vault-plugin-secrets-gitlab.nix {inherit pkgs;})
+    ];
+
+    # GitHub App installation tokens expire after 1h. The github-thrix MCP
+    # server (run via toolhive) reads the token from the encrypted toolhive
+    # secret `github_thrix_token` once at start, so it cannot refresh in
+    # place. Re-mint the token and restart the server before expiry.
+    refreshTimers.github-thrix = {
+      interval = "45min";
+      script = ''
+        token=$(vault read -field=token github/token installation_id=135664734) || exit 0
+        [ -n "$token" ] || { echo "no token returned from vault"; exit 0; }
+        echo "minted github token (length ''${#token})"
+        printf '%s' "$token" | thv secret set github_thrix_token
+        # thv restart does NOT re-resolve secrets — it reuses the old env.
+        # Full stop+rm+run is required to pick up the updated secret.
+        echo "recreating github-thrix with fresh token"
+        thv stop github-thrix 2>/dev/null || true
+        thv rm github-thrix 2>/dev/null || true
+        thv run \
+          --name github-thrix \
+          --transport stdio \
+          -e MCP_TRANSPORT=stdio \
+          --secret github_thrix_token,target=GITHUB_PERSONAL_ACCESS_TOKEN \
+          ghcr.io/github/github-mcp-server:v0.23.0
+      '';
+    };
+
+    # GitLab group access tokens, minted via the vault-plugin-secrets-gitlab
+    # engine (roles `com` and `cee`). Same problem as github-thrix: the gitlab
+    # MCP server reads its token from a toolhive secret once at start, so
+    # re-mint and recreate it before the token's lease expires. One timer per
+    # instance — gitlab.com and gitlab.cee.redhat.com.
+    refreshTimers.gitlab-mcp = {
+      interval = "45min";
+      script = ''
+        token=$(vault read -field=token gitlab/token/com) || exit 0
+        [ -n "$token" ] || { echo "no token returned from vault"; exit 0; }
+        echo "minted gitlab.com token (length ''${#token})"
+        printf '%s' "$token" | thv secret set gitlab_token
+        echo "recreating gitlab-mcp with fresh token"
+        thv stop gitlab-mcp 2>/dev/null || true
+        thv rm gitlab-mcp 2>/dev/null || true
+        thv run \
+          --name gitlab-mcp \
+          --transport stdio \
+          -e MCP_TRANSPORT=stdio \
+          -e USE_PIPELINE=true \
+          -e USE_MILESTONE=true \
+          --secret gitlab_token,target=GITLAB_PERSONAL_ACCESS_TOKEN \
+          ghcr.io/thrix/gitlab-mcp:latest
+      '';
+    };
+
+    refreshTimers.gitlab-cee-mcp = {
+      interval = "45min";
+      script = ''
+        token=$(vault read -field=token gitlab/token/cee) || exit 0
+        [ -n "$token" ] || { echo "no token returned from vault"; exit 0; }
+        echo "minted gitlab.cee token (length ''${#token})"
+        printf '%s' "$token" | thv secret set gitlab_cee_token
+        echo "recreating gitlab-cee-mcp with fresh token"
+        thv stop gitlab-cee-mcp 2>/dev/null || true
+        thv rm gitlab-cee-mcp 2>/dev/null || true
+        thv run \
+          --name gitlab-cee-mcp \
+          --transport stdio \
+          -e MCP_TRANSPORT=stdio \
+          -e USE_PIPELINE=true \
+          -e USE_MILESTONE=true \
+          -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
+          -e GITLAB_API_URL=https://gitlab.cee.redhat.com/api/v4 \
+          --secret gitlab_cee_token,target=GITLAB_PERSONAL_ACCESS_TOKEN \
+          ghcr.io/thrix/gitlab-mcp:latest
+      '';
+    };
+  };
+
   dnf = {
     enable = true;
     install = [
@@ -230,8 +320,15 @@ in {
 
       # 1password with plugins
       op = "run-op";
-      gh = "run-op plugin run -- gh";
+
+      # forges
+      gh = "GITHUB_TOKEN=\$(ght) gh";
       glab = "run-op plugin run -- glab";
+
+      # vault
+      ght = "vault read -field=token github/token installation_id=135664734";
+      glt = "vault read -field=token gitlab/token/com";
+      glt-cee = "vault read -field=token gitlab/token/cee";
 
       # redhat
       rh-kinit = "op read \"op://redhat/Red\\ Hat\\ Kerberos/password\" | kinit $(op read \"op://redhat/Red\\ Hat\\ Kerberos/kinit_username\")";

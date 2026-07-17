@@ -57,6 +57,7 @@
     homeManagerModules = {
       dnf = import ./modules/dnf.nix;
       hostConfig = import ./modules/host-config.nix;
+      vault = import ./modules/vault.nix;
     };
 
     homeConfigurations."thrix" = home-manager.lib.homeManagerConfiguration {
@@ -66,6 +67,7 @@
         nixvim.homeModules.nixvim
         ./modules/dnf.nix
         ./modules/host-config.nix
+        ./modules/vault.nix
         ./home.nix
       ];
 
@@ -82,6 +84,7 @@
         nixvim.homeModules.nixvim
         ./modules/dnf.nix
         ./modules/host-config.nix
+        ./modules/vault.nix
         ./home.nix
       ];
 
