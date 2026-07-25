@@ -640,6 +640,8 @@ in {
   # NixVim
   programs.nixvim = {
     enable = true;
+    # suppress the "nixpkgs.follows" mismatch warning — we want our nixpkgs, not nixvim's pin
+    nixpkgs.source = pkgs.path;
 
     globals = {
       mapleader = " ";
@@ -705,15 +707,14 @@ in {
   programs.ssh = {
     enable = true;
     package = pkgs.emptyDirectory;
-    matchBlocks = {
+    enableDefaultConfig = false;
+    settings = {
       "*" = {
-        extraOptions = {
-          IdentityAgent = "~/.1password/agent.sock";
-        };
+        IdentityAgent = "~/.1password/agent.sock";
       };
       "mvadkert" = {
-        hostname = "10.0.198.38";
-        user = "mvadkert";
+        Hostname = "10.0.198.38";
+        User = "mvadkert";
       };
     };
   };
