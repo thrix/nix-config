@@ -230,8 +230,8 @@ in {
           -e MCP_TRANSPORT=stdio \
           -e USE_PIPELINE=true \
           -e USE_MILESTONE=true \
-          -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
           -e GITLAB_API_URL=https://gitlab.cee.redhat.com/api/v4 \
+          -v /etc/pki/tls/certs/ca-bundle.crt:/etc/ssl/certs/ca-certificates.crt:ro \
           --secret gitlab_cee_token,target=GITLAB_PERSONAL_ACCESS_TOKEN \
           ghcr.io/thrix/gitlab-mcp:latest
       '';
