@@ -13,6 +13,7 @@
     bats
     claude-code
     cloud-nuke
+    codebase-memory-mcp
     codex
     cosign
     deadnix
@@ -89,6 +90,12 @@ in {
   home.stateVersion = "23.11";
 
   home.packages = nixPackages ++ customPackages ++ graphicalPackages;
+
+  # winboat bundles Electron; unstable's electron-40.10.5 is flagged EOL/insecure.
+  # We accept it rather than pinning winboat to an older nixpkgs.
+  nixpkgs.config.permittedInsecurePackages = [
+    "electron-40.10.5"
+  ];
 
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
