@@ -247,7 +247,7 @@ in {
     # and packages that need them live in home-private.nix (merged below).
     install =
       [
-        # toolchain / build deps
+        # toolchain / build deps / system deps
         "autoconf"
         "automake"
         "clang"
@@ -274,6 +274,7 @@ in {
         "python3-rpm"
         "redhat-rpm-config"
         "rpm-build"
+        "systemd"
 
         # CLI tools / utilities
         "bind-utils"
@@ -332,7 +333,7 @@ in {
         "pre-commit"
         "python3-hatch-vcs"
         "rubygem-asciidoctor"
-        "standard-test-roles"
+        "tmt+provision-container"
         "tmt+provision-virtual"
         "tox"
 
