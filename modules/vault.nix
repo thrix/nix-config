@@ -59,19 +59,24 @@
       '';
       "manual" = null;
     }
-    .${cfg.unseal.method};
+    .${
+      cfg.unseal.method
+    };
 
-  loginScript = {
-    "1password" = pkgs.writeShellScript "vault-login" ''
-      export VAULT_ADDR="${vaultAddr}"
-      root_token=$(sg ${cfg.unseal.onePassword.group} -c "op read '${cfg.unseal.onePassword.rootTokenRef}'" 2>/dev/null) || exit 1
-      [ -n "$root_token" ] || { echo "could not read root token from 1Password"; exit 1; }
-      vault login "$root_token" >/dev/null 2>&1
-      echo "vault login OK"
-    '';
-    "file" = null;
-    "manual" = null;
-  }.${cfg.unseal.method};
+  loginScript =
+    {
+      "1password" = pkgs.writeShellScript "vault-login" ''
+        export VAULT_ADDR="${vaultAddr}"
+        root_token=$(sg ${cfg.unseal.onePassword.group} -c "op read '${cfg.unseal.onePassword.rootTokenRef}'" 2>/dev/null) || exit 1
+        [ -n "$root_token" ] || { echo "could not read root token from 1Password"; exit 1; }
+        vault login "$root_token" >/dev/null 2>&1
+        echo "vault login OK"
+      '';
+      "file" = null;
+      "manual" = null;
+    }.${
+      cfg.unseal.method
+    };
 
   hasLoginScript = loginScript != null;
   hasUnsealScript = cfg.unseal.method != "manual";
@@ -80,20 +85,23 @@
   # Re-login snippet for refresh timer scripts — if the vault token is
   # stale (e.g. after vault restart), re-authenticate before running
   # the user's refresh script. Takes the job name as argument for logging.
-  mkReloginSnippet = jobName: {
-    "1password" = ''
-      if ! vault token lookup >/dev/null 2>&1; then
-        echo "refresh '${jobName}': vault token stale — re-logging in via 1Password"
-        root_token=$(sg ${cfg.unseal.onePassword.group} -c "op read '${cfg.unseal.onePassword.rootTokenRef}'" 2>/dev/null) || {
-          echo "refresh '${jobName}': could not read root token — skipping"
-          exit 0
-        }
-        vault login "$root_token" >/dev/null 2>&1 || { echo "refresh '${jobName}': login failed — skipping"; exit 0; }
-      fi
-    '';
-    "file" = "";
-    "manual" = "";
-  }.${cfg.unseal.method};
+  mkReloginSnippet = jobName:
+    {
+      "1password" = ''
+        if ! vault token lookup >/dev/null 2>&1; then
+          echo "refresh '${jobName}': vault token stale — re-logging in via 1Password"
+          root_token=$(sg ${cfg.unseal.onePassword.group} -c "op read '${cfg.unseal.onePassword.rootTokenRef}'" 2>/dev/null) || {
+            echo "refresh '${jobName}': could not read root token — skipping"
+            exit 0
+          }
+          vault login "$root_token" >/dev/null 2>&1 || { echo "refresh '${jobName}': login failed — skipping"; exit 0; }
+        fi
+      '';
+      "file" = "";
+      "manual" = "";
+    }.${
+      cfg.unseal.method
+    };
 
   bootstrapScript = let
     opVault = cfg.bootstrap.onePassword.vault;
@@ -183,73 +191,75 @@
   # ExecStart uses toolbox to run vault inside the nix container.
   serviceDir = ".config/systemd/user";
   serviceContent = ''
-[Unit]
-Description=HashiCorp Vault
-After=network.target
+    [Unit]
+    Description=HashiCorp Vault
+    After=network.target
 
-[Service]
-Type=simple
-ExecStartPre=${toolboxRun} mkdir -p ${dataDir} ${pluginDir}
-ExecStart=${toolboxRun} ${cfg.package}/bin/vault server -config=${homeDir}/${configFile}
-Restart=on-failure
-RestartSec=5
-Environment=HOME=${homeDir}
-# KillMode=process is critical: when vault is the first consumer of the
-# nix toolbox container, toolbox run starts the shared container under
-# this service cgroup. With the default control-group kill mode, a
-# restart tears down the whole cgroup, killing the container and every
-# other terminal running toolbox run. process mode kills only vault.
-KillMode=process
+    [Service]
+    Type=simple
+    ExecStartPre=${toolboxRun} mkdir -p ${dataDir} ${pluginDir}
+    ExecStart=${toolboxRun} ${cfg.package}/bin/vault server -config=${homeDir}/${configFile}
+    Restart=on-failure
+    RestartSec=5
+    Environment=HOME=${homeDir}
+    # KillMode=process is critical: when vault is the first consumer of the
+    # nix toolbox container, toolbox run starts the shared container under
+    # this service cgroup. With the default control-group kill mode, a
+    # restart tears down the whole cgroup, killing the container and every
+    # other terminal running toolbox run. process mode kills only vault.
+    KillMode=process
 
-[Install]
-WantedBy=default.target
+    [Install]
+    WantedBy=default.target
   '';
 
   # Each refresh job: a wrapper script (run inside toolbox) + a oneshot
   # service + a timer. Written as real unit files via activation, same as
   # vault.service, because host systemd cannot follow nix-store symlinks.
-  refreshJobs = lib.mapAttrsToList (name: job: rec {
-    inherit name;
-    unit = "vault-refresh-${name}";
-    script = pkgs.writeShellScript "${unit}.sh" ''
-      export VAULT_ADDR="${vaultAddr}"
-      # stdout/stderr land in the journal under this unit.
-      echo "refresh '${name}': starting (VAULT_ADDR=$VAULT_ADDR)"
-      # Exit quietly if vault is sealed/unreachable — next tick retries.
-      if ! vault status >/dev/null 2>&1; then
-        echo "refresh '${name}': vault sealed or unreachable — skipping"
-        exit 0
-      fi
-      ${mkReloginSnippet name}
-      ${job.script}
-      echo "refresh '${name}': done"
-    '';
-    serviceFile = ''
-[Unit]
-Description=Vault credential refresh: ${name}
+  refreshJobs =
+    lib.mapAttrsToList (name: job: rec {
+      inherit name;
+      unit = "vault-refresh-${name}";
+      script = pkgs.writeShellScript "${unit}.sh" ''
+        export VAULT_ADDR="${vaultAddr}"
+        # stdout/stderr land in the journal under this unit.
+        echo "refresh '${name}': starting (VAULT_ADDR=$VAULT_ADDR)"
+        # Exit quietly if vault is sealed/unreachable — next tick retries.
+        if ! vault status >/dev/null 2>&1; then
+          echo "refresh '${name}': vault sealed or unreachable — skipping"
+          exit 0
+        fi
+        ${mkReloginSnippet name}
+        ${job.script}
+        echo "refresh '${name}': done"
+      '';
+      serviceFile = ''
+        [Unit]
+        Description=Vault credential refresh: ${name}
 
-[Service]
-Type=oneshot
-Environment=HOME=${homeDir}
-# Run inside the nix toolbox so vault/thv and the on-disk vault token
-# are available. KillMode=process avoids tearing down the shared
-# container cgroup (see vault.service).
-ExecStart=${toolboxRun} ${script}
-KillMode=process
-    '';
-    timerFile = ''
-[Unit]
-Description=Timer for Vault credential refresh: ${name}
+        [Service]
+        Type=oneshot
+        Environment=HOME=${homeDir}
+        # Run inside the nix toolbox so vault/thv and the on-disk vault token
+        # are available. KillMode=process avoids tearing down the shared
+        # container cgroup (see vault.service).
+        ExecStart=${toolboxRun} ${script}
+        KillMode=process
+      '';
+      timerFile = ''
+        [Unit]
+        Description=Timer for Vault credential refresh: ${name}
 
-[Timer]
-OnBootSec=2min
-OnUnitActiveSec=${job.interval}
-Persistent=true
+        [Timer]
+        OnBootSec=2min
+        OnUnitActiveSec=${job.interval}
+        Persistent=true
 
-[Install]
-WantedBy=timers.target
-    '';
-  }) cfg.refreshTimers;
+        [Install]
+        WantedBy=timers.target
+      '';
+    })
+    cfg.refreshTimers;
 
   hasRefreshTimers = cfg.refreshTimers != {};
 in {
@@ -426,38 +436,38 @@ in {
     # symlinks at runtime. Vault resolves symlinks when validating
     # plugin_directory — on Silverblue /home -> /var/home causes mismatch.
     home.activation.vaultConfig = lib.hm.dag.entryBefore ["vaultService"] ''
-      mkdir -p "${homeDir}/${cfg.configDir}"
-      REAL_HOME=$(readlink -f "${homeDir}")
-      cat > "${homeDir}/${configFile}" << VAULTCFG
-ui = true
+            mkdir -p "${homeDir}/${cfg.configDir}"
+            REAL_HOME=$(readlink -f "${homeDir}")
+            cat > "${homeDir}/${configFile}" << VAULTCFG
+      ui = true
 
-# Toolbox containers lack CAP_IPC_LOCK
-disable_mlock = true
+      # Toolbox containers lack CAP_IPC_LOCK
+      disable_mlock = true
 
-api_addr = "${vaultAddr}"
+      api_addr = "${vaultAddr}"
 
-storage "file" {
-  path = "$REAL_HOME/${cfg.dataDir}"
-}
+      storage "file" {
+        path = "$REAL_HOME/${cfg.dataDir}"
+      }
 
-listener "tcp" {
-  address     = "${cfg.address}"
-  tls_disable = 1
-}
+      listener "tcp" {
+        address     = "${cfg.address}"
+        tls_disable = 1
+      }
 
-plugin_directory = "$REAL_HOME/${cfg.pluginDir}"
-VAULTCFG
+      plugin_directory = "$REAL_HOME/${cfg.pluginDir}"
+      VAULTCFG
     '';
 
     home.activation.vaultService = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      mkdir -p "${homeDir}/${serviceDir}"
-      rm -f "${homeDir}/${serviceDir}/vault.service"
-      cat > "${homeDir}/${serviceDir}/vault.service" << 'UNIT'
-${serviceContent}
-UNIT
-      ${systemctl} daemon-reload
-      ${systemctl} enable vault.service 2>/dev/null || true
-      ${systemctl} restart vault.service 2>/dev/null || true
+            mkdir -p "${homeDir}/${serviceDir}"
+            rm -f "${homeDir}/${serviceDir}/vault.service"
+            cat > "${homeDir}/${serviceDir}/vault.service" << 'UNIT'
+      ${serviceContent}
+      UNIT
+            ${systemctl} daemon-reload
+            ${systemctl} enable vault.service 2>/dev/null || true
+            ${systemctl} restart vault.service 2>/dev/null || true
     '';
 
     home.activation.vaultPlugins = lib.mkIf hasPlugins (lib.hm.dag.entryAfter ["vaultService"] ''
@@ -471,18 +481,20 @@ UNIT
     home.activation.vaultRefreshTimers = lib.mkIf hasRefreshTimers (lib.hm.dag.entryAfter ["vaultService"] ''
       mkdir -p "${homeDir}/${serviceDir}"
       ${lib.concatMapStringsSep "\n" (job: ''
-        rm -f "${homeDir}/${serviceDir}/${job.unit}.service" "${homeDir}/${serviceDir}/${job.unit}.timer"
-        cat > "${homeDir}/${serviceDir}/${job.unit}.service" << 'UNIT'
-${job.serviceFile}
-UNIT
-        cat > "${homeDir}/${serviceDir}/${job.unit}.timer" << 'UNIT'
-${job.timerFile}
-UNIT
-      '') refreshJobs}
+                  rm -f "${homeDir}/${serviceDir}/${job.unit}.service" "${homeDir}/${serviceDir}/${job.unit}.timer"
+                  cat > "${homeDir}/${serviceDir}/${job.unit}.service" << 'UNIT'
+          ${job.serviceFile}
+          UNIT
+                  cat > "${homeDir}/${serviceDir}/${job.unit}.timer" << 'UNIT'
+          ${job.timerFile}
+          UNIT
+        '')
+        refreshJobs}
       ${systemctl} daemon-reload
       ${lib.concatMapStringsSep "\n" (job: ''
-        ${systemctl} enable --now ${job.unit}.timer 2>/dev/null || true
-      '') refreshJobs}
+          ${systemctl} enable --now ${job.unit}.timer 2>/dev/null || true
+        '')
+        refreshJobs}
     '');
 
     home.packages =
