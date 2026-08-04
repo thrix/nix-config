@@ -36,8 +36,10 @@
     nomad
     nono
     opencode
+    openshell
     openshift
     packer
+    pi-coding-agent
     rclone
     rtk
     ruby
