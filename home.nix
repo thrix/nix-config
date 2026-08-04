@@ -136,7 +136,8 @@ in {
     TMT_WORKDIR_ROOT = "$HOME/.local/share/tmt";
 
     # python requests
-    REQUESTS_CA_BUNDLE = "/etc/pki/tls/certs/ca-bundle.crt";
+    # Changed in Fedora 44 - see https://fedoraproject.org/wiki/Changes/droppingOfCertPemFile
+    REQUESTS_CA_BUNDLE = "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem";
 
     # dgoss
     CONTAINER_RUNTIME = "podman";
