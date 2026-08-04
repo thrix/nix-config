@@ -78,6 +78,11 @@
   terminalType = "screen-256color";
   terminalHistoryLimit = 100000;
 
+  # Name of the nix-toolbox container everything runs in. Host-side consumers
+  # (sway keybindings, desktop entries, systemd user units) need it spelled out
+  # because they execute outside the container. Bump this on a Fedora rebase.
+  toolboxContainer = "nix-44";
+
   # Optional private config (RH-internal dnf repos/copr/packages, hostnames…).
   # Made visible to the flake by staging it in the Git index; flakes ignore
   # untracked files, so an absent file falls back to an empty attrset.
@@ -153,6 +158,7 @@ in {
 
   vault = {
     enable = true;
+    inherit toolboxContainer;
     unseal = {
       method = "1password";
       onePassword = {
@@ -757,7 +763,7 @@ in {
     enable = true;
     package = customPkgs.fedoraHost;
 
-    config = import ./sway/config.nix {inherit lib;};
+    config = import ./sway/config.nix {inherit lib toolboxContainer;};
 
     # Not able to make the validation work for now :(
     checkConfig = false;
@@ -791,28 +797,28 @@ in {
       "1password" = {
         name = "1Password";
         type = "Application";
-        exec = "toolbox run --container nix 1password %U";
+        exec = "toolbox run --container ${toolboxContainer} 1password %U";
         icon = "1password";
         categories = ["Network" "Security"];
       };
       dropbox = {
         name = "Dropbox";
         type = "Application";
-        exec = "toolbox run --container nix dropbox";
+        exec = "toolbox run --container ${toolboxContainer} dropbox";
         icon = "dropbox";
         categories = ["Network" "FileTransfer"];
       };
       discord = {
         name = "Discord";
         type = "Application";
-        exec = "toolbox run --container nix discord %U";
+        exec = "toolbox run --container ${toolboxContainer} discord %U";
         icon = "discord";
         categories = ["Network" "InstantMessaging"];
       };
       slack = {
         name = "Slack";
         type = "Application";
-        exec = "toolbox run --container nix slack %U";
+        exec = "toolbox run --container ${toolboxContainer} slack %U";
         icon = "slack";
         categories = ["Network" "InstantMessaging"];
       };

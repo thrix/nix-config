@@ -1,4 +1,8 @@
-{lib, ...}: let
+{
+  lib,
+  toolboxContainer,
+  ...
+}: let
   modifier = "Mod4";
   terminal = "foot";
 in {
@@ -19,11 +23,11 @@ in {
 
   keybindings = lib.mkOptionDefault {
     # terminal
-    "${modifier}+Return" = "exec ${terminal} toolbox enter nix";
+    "${modifier}+Return" = "exec ${terminal} toolbox enter ${toolboxContainer}";
     "${modifier}+Shift+Return" = "exec ${terminal}";
 
     # 1password
-    "${modifier}+Shift+p" = "exec toolbox run --container nix 1password --quick-access";
+    "${modifier}+Shift+p" = "exec toolbox run --container ${toolboxContainer} 1password --quick-access";
 
     # brightness
     "XF86KbdBrightnessUp" = "exec brightnessctl s 5%+";
@@ -62,7 +66,7 @@ in {
 
   startup = [
     {
-      command = "toolbox run --container nix 1password --silent";
+      command = "toolbox run --container ${toolboxContainer} 1password --silent";
       always = true;
     }
     {

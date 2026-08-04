@@ -15,6 +15,11 @@
   # does not include /usr/bin, so a bare `systemctl` is not found there.
   systemctl = "/usr/bin/systemctl --user";
 
+  # Host systemd runs the units, so every ExecStart has to hop into the toolbox
+  # container to see the nix store. Absolute path for the same restricted-PATH
+  # reason as systemctl above.
+  toolboxRun = "/usr/bin/toolbox run --container ${cfg.toolboxContainer}";
+
   # On a successful unseal, kick the refresh jobs immediately so dependent
   # consumers (e.g. github-thrix) get a fresh token now instead of waiting up
   # to the timer interval. Runs the oneshot services, not the timers.
@@ -184,8 +189,8 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStartPre=/usr/bin/toolbox run --container nix mkdir -p ${homeDir}/${cfg.dataDir} ${pluginDir}
-ExecStart=/usr/bin/toolbox run --container nix ${cfg.package}/bin/vault server -config=${homeDir}/${configFile}
+ExecStartPre=${toolboxRun} mkdir -p ${dataDir} ${pluginDir}
+ExecStart=${toolboxRun} ${cfg.package}/bin/vault server -config=${homeDir}/${configFile}
 Restart=on-failure
 RestartSec=5
 Environment=HOME=${homeDir}
@@ -229,7 +234,7 @@ Environment=HOME=${homeDir}
 # Run inside the nix toolbox so vault/thv and the on-disk vault token
 # are available. KillMode=process avoids tearing down the shared
 # container cgroup (see vault.service).
-ExecStart=/usr/bin/toolbox run --container nix ${script}
+ExecStart=${toolboxRun} ${script}
 KillMode=process
     '';
     timerFile = ''
@@ -261,6 +266,16 @@ in {
       type = lib.types.str;
       default = "127.0.0.1:8200";
       description = "Listen address for Vault.";
+    };
+
+    toolboxContainer = lib.mkOption {
+      type = lib.types.str;
+      default = "nix";
+      description = ''
+        Name of the toolbox container the systemd units run vault in. The units
+        are executed by the host systemd, which cannot see the nix store, so
+        every ExecStart goes through `toolbox run --container`.
+      '';
     };
 
     dataDir = lib.mkOption {

@@ -46,6 +46,8 @@ make install/pre-commit
 
 Because the config runs in a toolbox container, several programs use `package = pkgs.emptyDirectory` to avoid installing the package via Nix while still generating config files (foot terminal, ssh, waybar, firefox). The `fedoraHost` custom package provides wrapper scripts that delegate to the host via `flatpak-spawn --host`.
 
+Anything that runs *outside* the container (sway keybindings, `.desktop` entries, systemd user units) has to name the container explicitly via `toolbox run --container` / `toolbox enter`. The name lives in a single `toolboxContainer` binding in `home.nix`, which is threaded into `sway/config.nix` as an argument and into `modules/vault.nix` as the `vault.toolboxContainer` option. Bump it in that one place on a Fedora rebase — never hardcode the container name elsewhere.
+
 ### Activation Scripts
 
 `home.nix` defines custom activation scripts:
