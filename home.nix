@@ -110,6 +110,8 @@ in {
       "1password-cli"
       "claude-code"
       "discord"
+      # discord wraps a separate unwrapped derivation; getName reports it too
+      "discord-unwrapped"
       "dropbox"
       "firefox-bin"
       "firefox-bin-unwrapped"
@@ -307,6 +309,7 @@ in {
         "tig"
         "trivy"
         "valkey"
+        "wl-clipboard"
         "xxd"
 
         # containers / virtualization
@@ -473,7 +476,7 @@ in {
       op = "run-op";
 
       # forges
-      gh = "GITHUB_TOKEN=\$(ght) gh";
+      gh-thrix = "GITHUB_TOKEN=\$(ght) gh";
       glab = "run-op plugin run -- glab";
 
       # vault

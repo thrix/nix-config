@@ -10,14 +10,14 @@
     # https://github.com/NixOS/nixpkgs/issues/503112
     # nixpkgs-winboat.url = "github:nixos/nixpkgs/e38213b91d3786389a446dfce4ff5a8aaf6012f2";
 
-    # pinned nixpkgs for claude-code — 2.1.219 adds Claude Opus 5 support, which
-    # nixpkgs-unstable doesn't have yet. This is the head of the open bump PR
-    # NixOS/nixpkgs#545319; drop the pin once it merges.
-    nixpkgs-claude.url = "github:samestep/nixpkgs/e29c342b51311d226c93f22b5d431f44f707760c";
+    # pinned nixpkgs for claude-code — 2.1.280, which nixpkgs-unstable doesn't
+    # have yet. This is the merge commit of the bump PR NixOS/nixpkgs#565929;
+    # drop the pin once nixpkgs-unstable catches up.
+    nixpkgs-claude.url = "github:nixos/nixpkgs/13da634cb61b95a1877ef0abf66d7358b4a8d25c";
 
     # pinned nixpkgs for rtk — 0.43.0 was merged to master (NixOS/nixpkgs#545266)
     # but nixpkgs-unstable hasn't caught up yet; drop once it does.
-    nixpkgs-rtk.url = "github:nixos/nixpkgs/02508d54de0308f84f80830e86b9d95a6fdd6d62";
+    # nixpkgs-rtk.url = "github:nixos/nixpkgs/02508d54de0308f84f80830e86b9d95a6fdd6d62";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -41,7 +41,7 @@
     nixpkgs,
     # nixpkgs-winboat,
     nixpkgs-claude,
-    nixpkgs-rtk,
+    # nixpkgs-rtk,
     home-manager,
     nixvim,
     nixgl,
@@ -65,9 +65,9 @@
             }).claude-code;
         })
         # use rtk 0.43.0 from master (NixOS/nixpkgs#545266) until nixpkgs-unstable catches up
-        (_final: _prev: {
-          rtk = (import nixpkgs-rtk {inherit system;}).rtk;
-        })
+        # (_final: _prev: {
+        #   rtk = (import nixpkgs-rtk {inherit system;}).rtk;
+        # })
       ];
     };
   in {
