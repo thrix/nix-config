@@ -11,7 +11,7 @@ jobs:
     name: Pre-commit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
       - run: nix profile install nixpkgs#alejandra nixpkgs#deadnix
       - uses: pre-commit/action@v3.0.1
@@ -20,7 +20,7 @@ jobs:
     name: Nix build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
       - run: make check/nix
 
@@ -28,6 +28,6 @@ jobs:
     name: Bats tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
       - run: nix shell nixpkgs#bats --command make check/bats
