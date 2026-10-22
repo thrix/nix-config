@@ -115,6 +115,11 @@
       /run/host/bin/bluebuild "\$@"
       EOF
 
+            cat <<EOF > $out/bin/claude-s
+      #!/bin/bash
+      claude --model claude-sonnet-5[1m] "\$@"
+      EOF
+
             cat <<EOF > $out/bin/claude-redhat
       #!/bin/bash
       export CLAUDE_CODE_USE_SANDBOX=1
