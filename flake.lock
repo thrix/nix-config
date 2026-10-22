@@ -82,33 +82,17 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1790055231,
-        "narHash": "sha256-QpXotokGh5eeMG1Njiuh27oP0rK6t5+cMp7ymXSs7mc=",
+        "lastModified": 1791487292,
+        "narHash": "sha256-tqM7xDEsaeK1p6VvRygeZ9LkQRpUUkbRT02BHv6hnTM=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "b6c98e9e6633ee64753b594ff4a5febf0367fc00",
+        "rev": "8edc0c72e3a38faf5434e40d1f19431125fe4b30",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
         "ref": "nixpkgs-unstable",
         "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs-claude": {
-      "locked": {
-        "lastModified": 1790110326,
-        "narHash": "sha256-XMMPnmt4JM3tLeWxbCiza5YJHuEqXU4ntYq0gXlqGgw=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "13da634cb61b95a1877ef0abf66d7358b4a8d25c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "13da634cb61b95a1877ef0abf66d7358b4a8d25c",
         "type": "github"
       }
     },
@@ -139,7 +123,6 @@
         "home-manager": "home-manager",
         "nixgl": "nixgl",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-claude": "nixpkgs-claude",
         "nixvim": "nixvim"
       }
     },

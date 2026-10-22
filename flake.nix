@@ -10,14 +10,14 @@
     # https://github.com/NixOS/nixpkgs/issues/503112
     # nixpkgs-winboat.url = "github:nixos/nixpkgs/e38213b91d3786389a446dfce4ff5a8aaf6012f2";
 
-    # pinned nixpkgs for claude-code — 2.1.280, which nixpkgs-unstable doesn't
-    # have yet. This is the merge commit of the bump PR NixOS/nixpkgs#565929;
-    # drop the pin once nixpkgs-unstable catches up.
-    nixpkgs-claude.url = "github:nixos/nixpkgs/13da634cb61b95a1877ef0abf66d7358b4a8d25c";
-
     # pinned nixpkgs for rtk — 0.43.0 was merged to master (NixOS/nixpkgs#545266)
     # but nixpkgs-unstable hasn't caught up yet; drop once it does.
     # nixpkgs-rtk.url = "github:nixos/nixpkgs/02508d54de0308f84f80830e86b9d95a6fdd6d62";
+
+    # pinned nixpkgs for claude-code — 2.1.280, which nixpkgs-unstable didn't
+    # have yet. nixpkgs-unstable has since caught up (2.1.293+), so the pin is
+    # dropped; keep the commit around in case we need to re-pin.
+    # nixpkgs-claude.url = "github:nixos/nixpkgs/13da634cb61b95a1877ef0abf66d7358b4a8d25c";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -40,7 +40,7 @@
   outputs = {
     nixpkgs,
     # nixpkgs-winboat,
-    nixpkgs-claude,
+    # nixpkgs-claude,
     # nixpkgs-rtk,
     home-manager,
     nixvim,
@@ -57,13 +57,13 @@
         #   winboat = (import nixpkgs-winboat {inherit system;}).winboat;
         # })
         # use claude-code from the pinned bump PR until it lands in nixpkgs-unstable
-        (_final: _prev: {
-          claude-code =
-            (import nixpkgs-claude {
-              inherit system;
-              config.allowUnfree = true;
-            }).claude-code;
-        })
+        # (_final: _prev: {
+        #   claude-code =
+        #     (import nixpkgs-claude {
+        #       inherit system;
+        #       config.allowUnfree = true;
+        #     }).claude-code;
+        # })
         # use rtk 0.43.0 from master (NixOS/nixpkgs#545266) until nixpkgs-unstable catches up
         # (_final: _prev: {
         #   rtk = (import nixpkgs-rtk {inherit system;}).rtk;
