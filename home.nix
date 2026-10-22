@@ -119,6 +119,7 @@ in {
       "firefox-release-bin-unwrapped"
       "nomad"
       "packer"
+      "rtk"
       "slack"
       "vault-bin"
     ];
