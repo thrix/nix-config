@@ -48,6 +48,7 @@
     shfmt
     silver-searcher-ng
     stern
+    tailscale
     toolhive
     vault-bin
     yamllint
